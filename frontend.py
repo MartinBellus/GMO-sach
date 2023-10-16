@@ -16,9 +16,6 @@ class Move():
     SHOOT = 4
     ATTACK_AND_MOVE = 5
 
-COLORS = [Color.DEFAULT,Color.MOVE,Color.ATTACK,Color.SELECTED]
-
-
 WIDTH = 500
 HEIGHT = 500
 PADDING = 30
@@ -65,7 +62,8 @@ class Sachovnica():
             _y,_x = self.selected
 
             if self.figurky[_y][_x].move(x,y): # viem sa pohnut
-                pass
+                self.selected = [-1,-1]
+                self.figurky[y][x].deselect()
             elif self.selected == [y,x]: # klikam seba
                 self.figurky[y][x].deselect()
                 self.selected = [-1,-1]
@@ -110,23 +108,21 @@ class Figurka:
             ind = 0
             smer = rotation
             while mozem(x,y) and  visited[y][x][smer] == -1:
-                print(x,y)
-
                 # viem skocit na inu figurku
                 if self.mask[ind-1] != Move.NONE and self.parent.figurky[y][x] != None and self.parent.figurky[y][x] != self:
                     # viem ju vyhodit
                     if self.mask[ind - 1] in [Move.ATTACK, Move.MOVE_AND_ATTACK]:
-                        ans[y][x] = Color.ATTACK[(x + y)%2]
+                        ans[y][x] = Move.ATTACK
                     # viem vyhodit a ist dalej
                     if self.mask[ind - 1] == Move.ATTACK_AND_MOVE:
-                        ans[y][x] = Color.ATTACK[(x + y)%2]
+                        ans[y][x] = Move.ATTACK
                         visited[y][x][smer] = 1
                     else:
                         break
                 else:
                     # viem sa tam pohnut
                     if self.mask[ind - 1] in [Move.MOVE, Move.MOVE_AND_ATTACK, Move.ATTACK_AND_MOVE]:
-                        ans[y][x] = Color.MOVE[(x + y)%2]
+                        ans[y][x] = Move.MOVE
 
                     visited[y][x][smer] = 1
 
@@ -135,9 +131,7 @@ class Figurka:
                 y,x = y + DY[smer]*move[ind],x + DX[smer]*move[ind]
                 smer = (smer + 1)%4
                 ind = (ind + 1)%self.len
-                print("->",x,y)
 
-        ans[self.y][self.x] = Color.DEFAULT[(self.y + self.x)%2] 
         return ans
 
 
@@ -147,14 +141,48 @@ class Figurka:
             pattern = self.generate_path(smer)
             for i in pattern:
                 print(*i)
+            print()
             for r in range(8):
                 for c in range(8):
                     if pattern[r][c] != -1:
-                        self.sachovnica.itemconfig(self.parent.policka[r][c],fill=pattern[r][c])
+                        if pattern[r][c] == Move.ATTACK:
+                            self.sachovnica.itemconfig(self.parent.policka[r][c],fill=Color.ATTACK[(r+c)%2])
+                        elif pattern[r][c] == Move.MOVE:
+                            self.sachovnica.itemconfig(self.parent.policka[r][c],fill=Color.MOVE[(r+c)%2])
+                        elif pattern[r][c] == Move.SHOOT:
+                            self.sachovnica.itemconfig(self.parent.policka[r][c],fill=Color.SHOOT[(r+c)%2])
+
+        self.sachovnica.itemconfig(self.parent.policka[self.y][self.x],fill=Color.SELECTED[(self.x + self.y)%2])
 
 
     # pohne figurku na x,y (ak sa da) a vrati ci sa da
+    # TODO co ak mam viac moznosti? (shoot a move v inych smeroch vzdy)
     def move(self,x,y):
+        print("MOVE TO",x,y)
+        for smer in range(4):
+            pattern = self.generate_path(smer)
+            for i in pattern:
+                print(*i)
+            print()
+            if self.parent.figurky[y][x] != None:
+                # vyhodim figurku
+                if pattern[y][x] in [Move.ATTACK, Move.ATTACK_AND_MOVE, Move.MOVE_AND_ATTACK]:
+                    self.parent.figurky[y][x].delete()
+                    self.parent.figurky[y][x], self.parent.figurky[self.y][self.x] = self.parent.figurky[self.y][self.x] ,self.parent.figurky[y][x]
+                    self.sachovnica.move(self.id,(x - self.x)*SIZE,(y - self.y)*SIZE)
+                    self.x, self.y = x,y
+                    return 1
+                # zastrelim figurku
+                if pattern[y][x] in [Move.SHOOT]:
+                    self.parent.figurky[y][x].delete()
+                    return 1
+
+            elif pattern[y][x] in [Move.MOVE, Move.MOVE_AND_ATTACK, Move.ATTACK_AND_MOVE]:
+                self.parent.figurky[y][x], self.parent.figurky[self.y][self.x] = self.parent.figurky[self.y][self.x] ,self.parent.figurky[y][x]
+                self.sachovnica.move(self.id,(x - self.x)*SIZE,(y - self.y)*SIZE)
+                self.x, self.y = x,y
+                return 1
+        print("neda sa zabit")
         return 0
 
     # reset vsetkych policok
@@ -162,6 +190,11 @@ class Figurka:
         for r in range(8):
             for c in range(8):
                 self.sachovnica.itemconfig(self.parent.policka[r][c],fill=Color.DEFAULT[(r+c)%2])
+
+    def delete(self):
+        self.sachovnica.delete(self.id)
+        self.parent.figurky[self.y][self.x] = None
+        del(self)
 
 
 
