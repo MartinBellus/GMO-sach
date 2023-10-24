@@ -27,6 +27,7 @@ class player_codons(StrEnum, metaclass=MyEnumMeta):
 class players(Enum):
     ME = auto()
     OPPONENT = auto()
+    NONE = auto()
     
 class colors(Enum):
     BLACK = auto()
@@ -36,3 +37,13 @@ class which_piece(StrEnum, metaclass=MyEnumMeta):
     MINE = "A"
     OPPONENTS = "S"
     NONE = "C"
+
+class GameStatus(Enum):
+    BLACK_WON = auto()
+    WHITE_WON = auto()
+    DRAW = auto()
+    IN_PROGRESS = auto()
+    PROMOTION_POSSIBLE = auto()
+    
+BOARD_X = 8
+BOARD_Y = 8
