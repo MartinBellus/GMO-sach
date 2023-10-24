@@ -282,13 +282,12 @@ class Genome:
         ans: [MoveDescriptor] = []
 
         for move in moves:
-            if (move.x, move.y) in seen:
+            if move.to_position in seen:
                 continue
-            seen.add((move.x, move.y))
+            seen.add(move.to_position)
             ans.append(move)
 
         return ans
-
 
 # TESTING
 if __name__ == "__main__":
