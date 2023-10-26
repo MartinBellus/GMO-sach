@@ -8,31 +8,46 @@ class Handler(server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        self._set_headers()
-        path = self.path.split("/")[-1]
-        print(path)
-
         try:
-            with open(f"./data/{path}") as f:
-                self.wfile.write(f.read().encode("utf-8"))
+            self._set_headers()
+            path = self.path.split("/")[-1]
+            print(path)
+            
+            if not path.isalnum():
+                return
+
+            try:
+                with open(f"./data/{path}") as f:
+                    self.wfile.write(f.read().encode("utf-8"))
+            except:
+                self.wfile.write(b"GENOME HASH NOT FOUND!!!")
         except:
-            self.wfile.write(b"GENOME HASH NOT FOUND!!!")
+            pass
 
     def do_POST(self):
-        self._set_headers()
+        try:
+            self._set_headers()
 
-        path = self.path.split("/")[-1]
+            path = self.path.split("/")[-1]
 
-        length = int(self.headers["Content-Length"])
+            length = int(self.headers["Content-Length"])
+            
+            if length>500:
+                return
 
-        text = self.rfile.read(length).decode()
+            text = self.rfile.read(length).decode()
+            
+            if not path.isalnum() or not text.isalnum():
+                return
 
-        print(text, path)
+            print(text, path)
 
-        with open(f"./data/{path}", "w") as f:
-            f.write(text)
+            with open(f"./data/{path}", "w") as f:
+                f.write(text)
 
-        print(text, path)
+            print(text, path)
+        except:
+            pass
 
 
 try:

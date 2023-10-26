@@ -1,59 +1,64 @@
 from enums import *
 from move_descriptor import MoveDescriptor
 from genome import Genome
+from piece import Piece
+from util import Vector
 
 
 class Chessboard:
-    def __init__(self):
-        self.chessboard = [
-            [None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
-        self.current_descriptors = {}
-        self.need_to_promote = False
-        self.turn_number = 0
+    def __init__(self, sandbox: bool = False):
+        self.chessboard: dict[Vector, Piece] = {}
+        self.current_descriptors: dict[Vector, MoveDescriptor] = {}
+        self.need_to_promote: bool = False
+        self.turn_number: int = 0
+        self.sandbox: bool = sandbox
 
-    def insert_piece(self, piece, x, y):
-        self.chessboard[y][x] = piece
+    def insert_piece(self, piece: Piece, position: Vector):
+        self.chessboard[position] = piece
 
-    def get_coloured_board(self, colour: colors) -> [[players]]:
-        ans = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
-        for y in range(BOARD_Y):
-            for x in range(BOARD_X):
-                if self.chessboard[y][x] == None:
-                    ans[y][x] = players.NONE
-                else:
-                    if self.chessboard[y][x].color == colour:
-                        ans[y][x] = players.ME
-                    else:
-                        ans[y][x] = players.OPPONENT
+    def get_piece_owners(self, colour: colors) -> dict[Vector, players]:
+        ans: dict[Vector, players] = {}
+
+        for i in self.chessboard:
+            ans[i] = players.ME if self.chessboard[i].color == colour else players.OPPONENT
 
         return ans
 
-    def get_moves(self, x: int, y: int):
+    def get_moves(self, coords: Vector) -> list[MoveDescriptor]:
         # check if moves are already calculated
-        if (x, y) in self.current_descriptors:
-            return self.current_descriptors[(x, y)]
+        if coords in self.current_descriptors:
+            return self.current_descriptors[coords]
+
+        # check if there is a piece at the given coords
+        if coords not in self.chessboard:
+            # raise Exception("No piece at given coordinates")
+            return []
 
         # get simplified board to pass to genome
-        board = self.get_coloured_board(self.chessboard[y][x].color)
-        genome = self.chessboard[y][x].genome
-        moves = genome.get_moves(board, x, y)
+        board = self.get_piece_owners(self.chessboard[coords].color)
+        genome = self.chessboard[coords].genome
+        moves = genome.get_moves(board, coords)
 
         # save moves for future use
-        self.current_descriptors[(x, y)] = moves
+        self.current_descriptors[coords] = moves
         return moves
+
+    def __repr__(self):
+        return "Chessboard: " + "".join([f"{i}:{self.chessboard[i]}\n" for i in self.chessboard])
 
     def do_move(self, descriptor: MoveDescriptor) -> GameStatus:
 
         # check if its the correct player's turn
 
-        color = self.chessboard[descriptor.original_position[1]
-                                ][descriptor.original_position[0]].color
+        color = self.chessboard[descriptor.original_position].color
+        other_color = colors.WHITE if color == colors.BLACK else colors.BLACK
 
-        assert (color == colors.WHITE and self.turn_number % 2 == 0) or (
-            color == colors.BLACK and self.turn_number % 2 == 1), "Wrong player's turn"
+        if not self.sandbox:
+            assert (color == colors.WHITE and self.turn_number % 2 == 0) or (
+                color == colors.BLACK and self.turn_number % 2 == 1), "Wrong player's turn"
 
-        # TODO: should this be mandatory?
-        assert not self.need_to_promote, "Pawn promotion is required before making a move"
+            # TODO: should this be mandatory?
+            assert not self.need_to_promote, "Pawn promotion is required before making a move"
 
         assert descriptor.original_position in self.current_descriptors, "Invalid move descriptor"
         assert descriptor in self.current_descriptors[descriptor.original_position], "Invalid move descriptor"
@@ -64,45 +69,54 @@ class Chessboard:
         from_pos = descriptor.original_position
         to_pos = descriptor.to_position
 
-        fromx, fromy = from_pos
-        tox, toy = to_pos
-
         # move piece
-        piece_from_original_pos = self.chessboard[fromy][fromx]
-        piece_from_new_pos = self.chessboard[toy][tox]
+        piece_from_original_pos = self.chessboard[from_pos]
+        piece_from_new_pos = self.chessboard[to_pos] if to_pos in self.chessboard else None
 
-        self.chessboard[fromy][fromx] = None
-        self.chessboard[toy][tox] = None
+        # firstly, erase them
+        if from_pos in self.chessboard:
+            self.chessboard.pop(from_pos)
+
+        if to_pos in self.chessboard:
+            self.chessboard.pop(to_pos)
 
         # clone correct piece to correct position
+
+        # TODO somehow refactor into something reasonable
         if descriptor.original_square_new_state[0] == which_piece.MINE:
-            self.chessboard[fromy][fromx] = piece_from_original_pos.copy()
+            if piece_from_original_pos is not None:
+                self.chessboard[from_pos] = piece_from_original_pos.copy()
 
         if descriptor.original_square_new_state[0] == which_piece.OPPONENTS:
-            self.chessboard[fromy][fromx] = piece_from_new_pos.copy()
+            if piece_from_new_pos is not None:
+                self.chessboard[from_pos] = piece_from_new_pos.copy()
 
         if descriptor.to_square_new_state[0] == which_piece.MINE:
-            self.chessboard[toy][tox] = piece_from_original_pos.copy()
+            if piece_from_original_pos is not None:
+                self.chessboard[to_pos] = piece_from_original_pos.copy()
 
         if descriptor.to_square_new_state[0] == which_piece.OPPONENTS:
-            self.chessboard[toy][tox] = piece_from_new_pos.copy()
+            if piece_from_new_pos is not None:
+                self.chessboard[to_pos] = piece_from_new_pos.copy()
 
         # recolor the pieces correctly
-        if self.chessboard[toy][tox] is not None:
-            self.chessboard[toy][tox].set_color(
-                descriptor.to_square_new_state[1])
-        if self.chessboard[from_pos[1]][from_pos[0]] is not None:
-            self.chessboard[from_pos[1]][from_pos[0]].set_color(
-                descriptor.original_square_new_state[1])
+        if to_pos in self.chessboard:
+            self.chessboard[to_pos].set_color(
+                color if descriptor.to_square_new_state[1] == players.ME else other_color)
+        if from_pos in self.chessboard:
+            self.chessboard[from_pos].set_color(
+                color if descriptor.original_square_new_state[1] == players.ME else other_color)
+
+        self.turn_number += 1
 
         # board state has changed, descriptors are invalidated
         self.current_descriptors.clear()
 
-        if self.chessboard[toy][tox] is not None and self.chessboard[toy][tox].is_pawn:
-            if toy == 0 and self.chessboard[toy][tox].color == colors.WHITE:
+        if to_pos in self.chessboard and self.chessboard[to_pos].is_pawn:
+            if to_pos.y == 0 and self.chessboard[to_pos].color == colors.WHITE:
                 self.need_to_promote = True
                 return GameStatus.PROMOTION_POSSIBLE
-            if toy == BOARD_Y-1 and self.chessboard[toy][tox].color == colors.BLACK:
+            if to_pos.y == BOARD_Y-1 and self.chessboard[to_pos].color == colors.BLACK:
                 self.need_to_promote = True
                 return GameStatus.PROMOTION_POSSIBLE
 
@@ -110,10 +124,10 @@ class Chessboard:
 
         return GameStatus.IN_PROGRESS
 
-    def promote(self, x: int, y: int, new_genome: Genome) -> None:
-        assert self.chessboard[y][x] is not None and self.chessboard[y][x].is_pawn, "Invalid promotion"
-        color = self.chessboard[y][x].color
-        assert (color == colors.WHITE and y == 0) or (
-            color == colors.BLACK and y == BOARD_Y-1), "Invalid promotion"
-        self.chessboard[y][x].set_genome(new_genome)
+    def promote(self, position, new_genome: Genome) -> None:
+        assert position in self.chessboard and self.chessboard[position].is_pawn, "Invalid promotion"
+        color = self.chessboard[position].color
+        assert (color == colors.WHITE and position.y == 0) or (
+            color == colors.BLACK and position.y == BOARD_Y-1), "Invalid promotion"
+        self.chessboard[position].set_genome(new_genome)
         self.need_to_promote = False

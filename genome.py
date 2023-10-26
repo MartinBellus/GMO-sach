@@ -1,6 +1,8 @@
 from enums import *
 from move_descriptor import MoveDescriptor
 import hashlib
+from util import *
+from copy import copy
 
 
 class InvalidGenomeException(Exception):
@@ -167,53 +169,52 @@ class Spirulateral:
 
         return Movement(dist, coloring)
 
-    def get_moves(self, chessboard, x, y) -> list[MoveDescriptor]:
+    def get_moves(self, chessboard: dict[Vector, players], position: Vector) -> list[MoveDescriptor]:
 
         # in one direction of rotation
         ans: [MoveDescriptor] = []
         for starting_direction in range(4):
             moves = self.generate_moves_in_direction(
-                chessboard, x, y, starting_direction, 1)
+                chessboard, position, starting_direction, 1)
             ans.extend(moves)
 
         # and the other
         for starting_direction in range(4):
             moves = self.generate_moves_in_direction(
-                chessboard, x, y, starting_direction, -1)
+                chessboard, position, starting_direction, -1)
             ans.extend(moves)
         return ans
 
-    def generate_moves_in_direction(self, chessboard, x, y, direction, delta) -> list[MoveDescriptor]:
+    def generate_moves_in_direction(self, chessboard : dict[Vector,players], position: Vector, direction: int, delta: int) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
 
-        dx = (0, 1, 0, -1)
-        dy = (1, 0, -1, 0)
+        direction_vectors = [Vector(0, 1), Vector(
+            1, 0), Vector(0, -1), Vector(-1, 0)]
 
         visited = set()
         i = 0
-        currx = x
-        curry = y
+        current_position = position
         while 1:
             # move according to the current part of the spirulateral
-            currx += dx[direction]*self.parts[i].distance
-            curry += dy[direction]*self.parts[i].distance
+            current_position += direction_vectors[direction] * \
+                self.parts[i].distance
 
             # make sure not to go out of bounds
-            if currx < 0 or currx >= BOARD_X or curry < 0 or curry >= BOARD_Y:
+            if not inside_chessboard(current_position):
                 break
 
             # make sure we don't get stuck in a cycle
-            if (currx, curry, direction) in visited:
+            if (current_position, direction) in visited:
                 break
-            visited.add((currx, curry, direction))
+            visited.add((current_position, direction))
 
             # maybe color the tile if the move is coloring
             if self.parts[i].coloring:
                 moves.append(self.make_move_descriptor(
-                    chessboard, currx, curry, (x, y)))
+                    chessboard, current_position, position))
 
             # when we hit a piece, the spirulateral ends
-            if chessboard[currx][curry] != players.NONE:
+            if current_position in chessboard:
                 break
 
             # go to the next part of the spirulateral
@@ -222,21 +223,21 @@ class Spirulateral:
             direction = (direction+delta) % 4
         return moves
 
-    def make_move_descriptor(self, chessboard, currx, curry, original_pos) -> MoveDescriptor:
-        if chessboard[currx][curry] == players.NONE:
+    def make_move_descriptor(self, chessboard, current_pos, original_pos) -> MoveDescriptor:
+        if current_pos not in chessboard:
             here = (self.on_no_capture[0], self.owner_on_current)
             there = (self.on_no_capture[1], self.owner_on_next)
-        elif chessboard[currx][curry] == players.ME:
+        elif chessboard[current_pos] == players.ME:
             here = (self.on_own_capture[0], self.owner_on_current)
             there = (self.on_own_capture[1], self.owner_on_next)
-        elif chessboard[currx][curry] == players.OPPONENT:
+        elif chessboard[current_pos] == players.OPPONENT:
             here = (self.on_opponent_capture[0], self.owner_on_current)
             there = (self.on_opponent_capture[1], self.owner_on_next)
         else:
             genome_assert(
-                False, f"Invalid player {chessboard[currx][curry]} on chessboard.")
+                False, f"Invalid player {chessboard[current_pos]} on chessboard.")
 
-        return MoveDescriptor(original_pos, (currx, curry), here, there)
+        return MoveDescriptor(original_pos, current_pos, here, there)
 
 
 class Genome:
@@ -270,10 +271,10 @@ class Genome:
     def hash(self) -> str:
         return hashlib.sha256(self.dna.get_string().encode()).hexdigest()[:6]
 
-    def get_moves(self, chessboard: list[list[players]], x, y):
+    def get_moves(self, chessboard: dict[Vector,players], position: Vector) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
         for spirulateral in self.spirulaterals:
-            moves.extend(spirulateral.get_moves(chessboard, x, y))
+            moves.extend(spirulateral.get_moves(chessboard, position))
 
         # deduplicate moves
 
@@ -288,6 +289,7 @@ class Genome:
             ans.append(move)
 
         return ans
+
 
 # TESTING
 if __name__ == "__main__":

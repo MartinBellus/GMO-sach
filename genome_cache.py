@@ -59,6 +59,8 @@ def decrypt(string: str):
 
 QUERY_ATTEMPTS = 5
 
+TIMEOUT = 1
+
 
 def fetch_genome(hash: str) -> Genome:
     if hash in genome_cache:
@@ -70,10 +72,15 @@ def fetch_genome(hash: str) -> Genome:
 
     string = None
     for i in range(QUERY_ATTEMPTS):
-        response = requests.get(HTTP_URL+encrypted_hash)
-        if response:
-            string = response.text
-            break
+        try:
+            response = requests.get(HTTP_URL+encrypted_hash, timeout=TIMEOUT)
+            if response:
+                string = response.text
+                break
+        except requests.exceptions.Timeout:
+            pass
+        except:
+            raise NetworkException
         sleep(0.1 * 2**i)
 
     if string is None:
@@ -102,10 +109,12 @@ def empty_queue():
         for i in range(POST_ATTEMPTS):
             try:
                 response = requests.post(
-                    HTTP_URL+current["hash"], current["dna"])
+                    HTTP_URL+current["hash"], current["dna"], timeout=TIMEOUT)
                 if response:
                     done = True
                     break
+            except requests.exceptions.Timeout:
+                pass
             except:
                 raise NetworkException
             sleep(0.1 * 2**i)
