@@ -1,0 +1,48 @@
+FORMÁT:
+spirulaterál oddeľovač spirulaterál oddeľovač spirulaterál
+oddeľovače chcú asi trochu vynikať
+ofarbovanie ako súčasť oddeľovača?
+spirulaterál: postupnosť krokov (0,1,2,3,4), nenulové čísla môžu ofarbovať (označené ako záporné)  - 9 rôznych krokov
+oddeľovač ku každému spirulaterálu - pred?
+Syntax oddeľovača - ťah na prázdne (prázdne, , ťah na nepriateľskú figúrku, ťah na priateľskú figúrku
+Aký bude ownership výsledných políčok? 2 bity informácie - chceme trestať
+Čo bude kde na konci? 3*9
+
+Debuffy:
+iba dopredu
+spirulateral sa vykona len raz
+Nevieš sa teleportovať medzi bočnými hranami
+Ofarbit vies len policko opacnej farby
+Ofarbiť vieš len políčko rovnakej farby
+Mozes vyuzit max X pismeniek A (inak to nefunguje)
+Ofarbit policko s figurkou vies iba ak s tebou susedi
+
+Oddeľovač:
+ST¹T²O¹O²O³Z
+S a Z sú fixné - koniec a začiatok
+AHH, HHA
+T¹, T² - buď nepriateľský kodón (HSH), alebo debuff kodón (viacero ich je, vymyslíme podľa počtu)
+O¹, O², O³ - dvojica {ja, iný, nič} - 9 možností
+jaja - AHA
+jainý - AHS
+janič - AHC
+inýja - SHA
+inýiný - SHS
+inýnič - SHC
+ničja - CHA
+ničiný - CHS
+ničnič - CHC
+
+Spirulaterál:
+Postupnosť čísel -4 až 4 - 9 možností, neobsahujú H
+Prvé písmeno: znamienko
+A - 0
+S - +
+C - -
+Zvyšné dve: číslo v ternárke, zmoduluješ piatimi
+A - 0
+S - 1
+C - 2
+
+Veža:
+AHH HSH HAA CHA CHA CHA HHA SAS AAA AAA AAA
