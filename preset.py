@@ -8,13 +8,13 @@ from genome import Genome
 import hashlib
 
 class Preset:
-    def __init__(self, genomes:list[Genome]):
-        self.genomes=genomes
-        assert len(genomes) <= BOARD_X, "There must be at most {BOARD_X} genomes in a preset"
+    def __init__(self, hashes:list[str]):
+        self.hashes=hashes
+        assert len(hashes) <= BOARD_X, "There must be at most {BOARD_X} genomes in a preset"
 
-        self.hashes=[]
-        for i in self.genomes:
-            self.hashes.append(i.hash())
+        self.genomes=[]
+        for i in self.hashes:
+            self.genomes.append(Genome.from_hash(i))
         self.string = "-".join(self.hashes)
         
     
@@ -41,7 +41,7 @@ class Preset:
 
         hashes = string.split("-")
 
-        return cls([Genome.from_hash(i) for i in hashes])
+        return cls(hashes)
     
     def save(self):
         encrypted_string = encrypt(self.string)

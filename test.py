@@ -26,7 +26,7 @@ hash=genome.hash()
 board = Chessboard(sandbox=True)
 pieces = []
 
-preset = Preset([genome for i in range(BOARD_X)])
+preset = Preset([hash for i in range(BOARD_X)])
 hsh=preset.hash()
 preset.save()
 

@@ -5,6 +5,10 @@ from piece import Piece
 from vector import Vector
 from constants import *
 from preset import Preset
+from collections import namedtuple
+
+PieceInfo = namedtuple(
+    "PieceInfo", ["genome_hash", "color", "is_pawn", "is_king"])
 
 
 class Chessboard:
@@ -14,10 +18,34 @@ class Chessboard:
         self.need_to_promote: bool = False
         self.turn_number: int = 0
         self.sandbox: bool = sandbox
+        self.king_counts: dict[colors, int] = {
+            colors.WHITE: 0, colors.BLACK: 0}
 
-    def insert_piece(self, piece: Piece, position: Vector):
+    def insert_piece(self, genome_hash: str, color: colors, position: Vector, is_pawn=False, is_king=False):
         assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
+        genome = Genome.from_hash(genome_hash)
+        piece = Piece(genome, color, is_pawn, is_king)
         self._insert_piece(piece, position)
+
+    def erase_piece(self, pos: Vector):
+        assert self.sandbox, "erase_piece only available in sandbox, in real games use presets"
+        self._erase_piece(pos)
+
+    def set_king(self, position: Vector):
+        if not self.sandbox:
+            assert self.turn_number == 0, "Can't set king after the game has begun."
+        if position in self.chessboard:
+            self.chessboard[position].is_king = True
+            color = self.chessboard[position].color
+            self.king_counts[color] += 1
+        else:
+            raise IndexError
+
+    def _erase_piece(self, pos: Vector):
+        if pos in self.chessboard:
+            del self.chessboard[pos]
+        else:
+            raise IndexError
 
     def _insert_piece(self, piece: Piece, position: Vector):
         self.chessboard[position] = piece
@@ -65,6 +93,8 @@ class Chessboard:
 
             # TODO: should this be mandatory?
             assert not self.need_to_promote, "Pawn promotion is required before making a move"
+            assert self.king_counts[colors.WHITE], "There is no white king"
+            assert self.king_counts[colors.BLACK], "There is no black king"
 
         assert descriptor.original_position in self.current_descriptors, "Invalid move descriptor"
         assert descriptor in self.current_descriptors[descriptor.original_position], "Invalid move descriptor"
@@ -137,40 +167,49 @@ class Chessboard:
             color == colors.BLACK and position.y == BOARD_Y-1), "Invalid promotion"
         self.chessboard[position].set_genome(new_genome)
         self.need_to_promote = False
-    
-    def load_preset(self, preset:Preset, color: colors):
+
+    def load_preset(self, preset: Preset, color: colors):
         if not self.sandbox:
-            assert self.turn_number==0
-        
-        if color==colors.WHITE:
-            row=0
-        elif color==colors.BLACK:
-            row=BOARD_Y-1
+            assert self.turn_number == 0
+
+        if color == colors.WHITE:
+            row = 0
+        elif color == colors.BLACK:
+            row = BOARD_Y-1
         else:
             raise Exception
-        
+
         for i in range(len(preset.genomes)):
             pos = Vector(i, row)
 
             if not self.sandbox:
                 assert pos not in self.chessboard, "Attempt to place preset piece on an existing piece."
-                
+
             piece = Piece(preset.genomes[i], color)
-            self._insert_piece(piece ,pos)
-            
-        #pawns
-        if color==colors.WHITE:
-            row=1
-        elif color==colors.BLACK:
-            row=BOARD_Y-2
-        
-        pawn=Piece(Genome(PAWN_DNA), color, is_pawn=True)
+            self._insert_piece(piece, pos)
+
+        # pawns
+        if color == colors.WHITE:
+            row = 1
+        elif color == colors.BLACK:
+            row = BOARD_Y-2
+
+        pawn = Piece(Genome(PAWN_DNA), color, is_pawn=True)
         for i in range(BOARD_X):
             pos = Vector(i, row)
 
             if not self.sandbox:
                 assert pos not in self.chessboard, "Attempt to place preset piece on an existing piece."
-            
+
             self._insert_piece(pawn, pos)
-        
-        
+
+    def get_board_for_reading(self) -> list[list[None | PieceInfo]]:
+        res = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
+
+        # TODO
+        for i in self.chessboard:
+            piece = self.chessboard[i]
+            res[i.y][i.x] = PieceInfo(
+                piece.genome.hash(), piece.color(), piece.is_pawn, piece.is_king)
+
+        return res
