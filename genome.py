@@ -1,8 +1,9 @@
 from enums import *
 from move_descriptor import MoveDescriptor
 import hashlib
-from util import *
+from vector import Vector, inside_chessboard
 from copy import copy
+from genome_cache import fetch_genome, upload_genome
 
 
 class InvalidGenomeException(Exception):
@@ -289,6 +290,14 @@ class Genome:
             ans.append(move)
 
         return ans
+    
+    @classmethod
+    def from_hash(cls, hash:str):
+        return cls(fetch_genome(hash))
+    
+    def save(self):
+        upload_genome(self.hash(), self.dna.get_string())
+
 
 
 # TESTING

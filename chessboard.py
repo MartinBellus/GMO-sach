@@ -2,7 +2,9 @@ from enums import *
 from move_descriptor import MoveDescriptor
 from genome import Genome
 from piece import Piece
-from util import Vector
+from vector import Vector
+from constants import *
+from preset import Preset
 
 
 class Chessboard:
@@ -14,6 +16,10 @@ class Chessboard:
         self.sandbox: bool = sandbox
 
     def insert_piece(self, piece: Piece, position: Vector):
+        assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
+        self._insert_piece(piece, position)
+
+    def _insert_piece(self, piece: Piece, position: Vector):
         self.chessboard[position] = piece
 
     def get_piece_owners(self, colour: colors) -> dict[Vector, players]:
@@ -131,3 +137,40 @@ class Chessboard:
             color == colors.BLACK and position.y == BOARD_Y-1), "Invalid promotion"
         self.chessboard[position].set_genome(new_genome)
         self.need_to_promote = False
+    
+    def load_preset(self, preset:Preset, color: colors):
+        if not self.sandbox:
+            assert self.turn_number==0
+        
+        if color==colors.WHITE:
+            row=0
+        elif color==colors.BLACK:
+            row=BOARD_Y-1
+        else:
+            raise Exception
+        
+        for i in range(len(preset.genomes)):
+            pos = Vector(i, row)
+
+            if not self.sandbox:
+                assert pos not in self.chessboard, "Attempt to place preset piece on an existing piece."
+                
+            piece = Piece(preset.genomes[i], color)
+            self._insert_piece(piece ,pos)
+            
+        #pawns
+        if color==colors.WHITE:
+            row=1
+        elif color==colors.BLACK:
+            row=BOARD_Y-2
+        
+        pawn=Piece(Genome(PAWN_DNA), color, is_pawn=True)
+        for i in range(BOARD_X):
+            pos = Vector(i, row)
+
+            if not self.sandbox:
+                assert pos not in self.chessboard, "Attempt to place preset piece on an existing piece."
+            
+            self._insert_piece(pawn, pos)
+        
+        

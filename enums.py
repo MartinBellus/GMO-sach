@@ -45,5 +45,3 @@ class GameStatus(Enum):
     IN_PROGRESS = auto()
     PROMOTION_POSSIBLE = auto()
     
-BOARD_X = 8
-BOARD_Y = 8

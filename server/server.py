@@ -1,53 +1,89 @@
 from http import server
 
+ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+
+
+def check_string_content(s: str):
+    for i in s:
+        if i not in ALPHABET:
+            return False
+    return True
+
+
+ALLOWED_SUBADDRESSES = ["genome", "preset"]
+
 
 class Handler(server.BaseHTTPRequestHandler):
-    def _set_headers(self):
-        self.send_response(200)
+    def _set_headers(self, code: int = 200):
+        self.send_response(code)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
     def do_GET(self):
         try:
-            self._set_headers()
-            path = self.path.split("/")[-1]
+            path = self.path.split("/")
             print(path)
-            
-            if not path.isalnum():
+
+            query = path[-2]
+
+            if query not in ALLOWED_SUBADDRESSES:
+                print(f"UNKNOWN GET QUERY TYPE: {query}")
+                return
+
+            req = path[-1]
+            if not check_string_content(req):
+                self._set_headers(400)
                 return
 
             try:
-                with open(f"./data/{path}") as f:
+                with open(f"./{query}/{req}") as f:
+                    self._set_headers()
                     self.wfile.write(f.read().encode("utf-8"))
+                    return
             except:
-                self.wfile.write(b"GENOME HASH NOT FOUND!!!")
-        except:
-            pass
+                self._set_headers(404)
+                return
+
+        except Exception as e:
+            print(e)
 
     def do_POST(self):
         try:
-            self._set_headers()
 
-            path = self.path.split("/")[-1]
+            path = self.path.split("/")
+
+            query = path[-2]
+
+            if query not in ALLOWED_SUBADDRESSES:
+                self._set_headers(400)
+                print(f"UNKNOWN POST QUERY TYPE: {query}")
+                return
 
             length = int(self.headers["Content-Length"])
-            
-            if length>500:
+
+            req = path[-1]
+
+            if length > 500:
                 return
 
             text = self.rfile.read(length).decode()
-            
-            if not path.isalnum() or not text.isalnum():
+
+            if not check_string_content(req) or not check_string_content(text):
+                self._set_headers(400)
                 return
 
-            print(text, path)
+            self._set_headers()
+            filename =f"./{query}/{req}"
+            try:
+                f=open(filename, "r")
+                f.close()
+                return
+            except:
+                with open(filename, "w") as f:
+                    f.write(text)
 
-            with open(f"./data/{path}", "w") as f:
-                f.write(text)
-
-            print(text, path)
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
 
 try:
