@@ -2,11 +2,12 @@ import tkinter
 from PIL import Image, ImageTk
 
 class Color():
-    DEFAULT = ["white","black"]
-    SELECTED = ["gray","gray"]
-    MOVE = ["blue","blue"]
-    ATTACK = ["red","red"]
-    SHOOT = ["green","green"]
+    #           BIELE       CIERNE
+    DEFAULT =   ["#eae9d2"  ,"#4b7399"]
+    SELECTED =  ["gray"     ,"gray"]
+    MOVE =      ["#b7d171"  ,"#87a65a"]
+    ATTACK =    ["#eb7b6a"  ,"#cb645e"]
+    SHOOT =     ["green"    ,"green"]
 
 class Move():
     NONE = 0
@@ -81,8 +82,11 @@ class Sachovnica():
         self.figurky[3][3] = Bishop
         Pawn2 = Figurka(2,1,self,[2,[1,2],[1,1]],"")
         self.figurky[1][2] = Pawn2
-        Divny = Figurka(5,5,self,[3,[1,1,1],[1,0,1]],"")
+        Divny = Figurka(5,5,self,[2,[0,3],[2,1],[1,2]],"")
         self.figurky[5][5] = Divny
+        # TODO shoot nefunguje
+        Dama = Figurka(7,7,self,[4,[0,4,0,0],[0,1,0,0],[1,1,0,0]],"")
+        self.figurky[7][7] = Dama
 
 class Figurka:
     # x, y (indexovane zprava hore), parent object, decoded genome ([dlzka, [farby], *[moves]]), genome, image
@@ -107,12 +111,15 @@ class Figurka:
             y,x = self.y, self.x
             ind = 0
             smer = rotation
-            while mozem(x,y) and  visited[y][x][smer] == -1:
+            while mozem(x,y) and visited[y][x][smer] == -1:
                 # viem skocit na inu figurku
                 if self.mask[ind-1] != Move.NONE and self.parent.figurky[y][x] != None and self.parent.figurky[y][x] != self:
                     # viem ju vyhodit
                     if self.mask[ind - 1] in [Move.ATTACK, Move.MOVE_AND_ATTACK]:
                         ans[y][x] = Move.ATTACK
+                    # viem ju zastrelit
+                    if self.mask[ind - 1] == Move.SHOOT:
+                        ans[y][x] = Move.SHOOT
                     # viem vyhodit a ist dalej
                     if self.mask[ind - 1] == Move.ATTACK_AND_MOVE:
                         ans[y][x] = Move.ATTACK
@@ -121,7 +128,7 @@ class Figurka:
                         break
                 else:
                     # viem sa tam pohnut
-                    if self.mask[ind - 1] in [Move.MOVE, Move.MOVE_AND_ATTACK, Move.ATTACK_AND_MOVE]:
+                    if self.mask[ind - 1] in [Move.MOVE, Move.MOVE_AND_ATTACK, Move.ATTACK_AND_MOVE, Move.SHOOT]:
                         ans[y][x] = Move.MOVE
 
                     visited[y][x][smer] = 1
@@ -173,11 +180,12 @@ class Figurka:
                     self.x, self.y = x,y
                     return 1
                 # zastrelim figurku
-                if pattern[y][x] in [Move.SHOOT]:
+                if pattern[y][x] == Move.SHOOT:
                     self.parent.figurky[y][x].delete()
                     return 1
 
-            elif pattern[y][x] in [Move.MOVE, Move.MOVE_AND_ATTACK, Move.ATTACK_AND_MOVE]:
+            # viem sa tam pohnut
+            elif pattern[y][x] == Move.MOVE:
                 self.parent.figurky[y][x], self.parent.figurky[self.y][self.x] = self.parent.figurky[self.y][self.x] ,self.parent.figurky[y][x]
                 self.sachovnica.move(self.id,(x - self.x)*SIZE,(y - self.y)*SIZE)
                 self.x, self.y = x,y
