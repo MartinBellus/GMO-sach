@@ -210,6 +210,6 @@ class Chessboard:
         for i in self.chessboard:
             piece = self.chessboard[i]
             res[i.y][i.x] = PieceInfo(
-                piece.genome.hash(), piece.color(), piece.is_pawn, piece.is_king)
+                piece.genome.hash(), piece.color, piece.is_pawn, piece.is_king)
 
         return res

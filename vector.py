@@ -25,6 +25,9 @@ class Vector:
     def __repr__(self):
         return f"Vector({self.x},{self.y})"
 
+    def parity(self) -> bool:
+        return (self.x + self.y)%2
+
 
 def inside_chessboard(position: Vector) -> bool:
     return 0 <= position.x and position.x < BOARD_X and 0 <= position.y and position.y < BOARD_Y
