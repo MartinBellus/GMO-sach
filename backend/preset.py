@@ -1,10 +1,10 @@
-from utility.constants import *
 import requests
 from utility.encryption import encrypt, decrypt
 from utility.exceptions import NetworkException
+from utility.constants import *
 from time import sleep
-from network import NetworkQuery
-from genome import Genome
+from backend.network import NetworkQuery
+from backend.genome import Genome
 import hashlib
 
 class Preset:

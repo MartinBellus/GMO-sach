@@ -1,4 +1,4 @@
-from genome import Genome
+from backend.genome import Genome
 from utility.enums import *
 
 

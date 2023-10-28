@@ -1,4 +1,4 @@
-from constants import *
+from utility.constants import *
 
 
 class Vector:

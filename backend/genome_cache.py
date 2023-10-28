@@ -3,7 +3,7 @@ from time import sleep
 from utility.encryption import encrypt, decrypt
 from utility.constants import *
 from utility.exceptions import NetworkException
-from network import NetworkQuery
+from backend.network import NetworkQuery
 
 
 

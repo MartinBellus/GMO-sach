@@ -1,9 +1,9 @@
 from utility.enums import *
-from move_descriptor import MoveDescriptor
-import hashlib
 from utility.vector import Vector, inside_chessboard
+from backend.move_descriptor import MoveDescriptor
+from backend.genome_cache import fetch_genome, upload_genome
 from copy import copy
-from genome_cache import fetch_genome, upload_genome
+import hashlib
 import re
 
 

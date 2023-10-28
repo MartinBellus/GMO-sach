@@ -1,10 +1,10 @@
 from utility.enums import *
-from move_descriptor import MoveDescriptor
-from genome import Genome
-from piece import Piece
+from backend.move_descriptor import MoveDescriptor
+from backend.genome import Genome
+from backend.piece import Piece
 from utility.vector import Vector
 from utility.constants import *
-from preset import Preset
+from backend.preset import Preset
 from collections import namedtuple
 
 PieceInfo = namedtuple(
