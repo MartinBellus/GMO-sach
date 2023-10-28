@@ -4,6 +4,7 @@ import hashlib
 from vector import Vector, inside_chessboard
 from copy import copy
 from genome_cache import fetch_genome, upload_genome
+import re
 
 
 class InvalidGenomeException(Exception):
@@ -13,6 +14,8 @@ class InvalidGenomeException(Exception):
 class OutOfCodons(InvalidGenomeException):
     pass
 
+def remove_blank(s : str) -> str:
+    return re.sub(r'\s','',s)
 
 def genome_assert(condition: bool, message: str = "Invalid genome."):
     if not condition:
@@ -243,6 +246,7 @@ class Spirulateral:
 
 class Genome:
     def __init__(self, dna: str):
+        dna = remove_blank(dna)
         self.dna = DnaStream(dna)
         self.spirulaterals: list[Spirulateral] = []
         self.parse_dna()
