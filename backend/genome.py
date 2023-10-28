@@ -1,7 +1,7 @@
-from enums import *
+from utility.enums import *
 from move_descriptor import MoveDescriptor
 import hashlib
-from vector import Vector, inside_chessboard
+from utility.vector import Vector, inside_chessboard
 from copy import copy
 from genome_cache import fetch_genome, upload_genome
 import re

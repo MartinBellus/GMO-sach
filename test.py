@@ -1,10 +1,10 @@
-from chessboard import Chessboard
-from genome import *
-from piece import Piece
+from backend.chessboard import Chessboard
+from backend.genome import *
+from backend.piece import Piece
 from time import sleep
-from constants import *
+from utility.constants import *
 import random
-from preset import Preset
+from backend.preset import Preset
 
 
 def print_chessboard(board):

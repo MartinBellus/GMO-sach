@@ -1,5 +1,5 @@
 from genome import Genome
-from enums import *
+from utility.enums import *
 
 
 class Piece:

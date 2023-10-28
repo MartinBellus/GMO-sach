@@ -1,7 +1,7 @@
-from constants import *
+from utility.constants import *
 import requests
-from encryption import encrypt, decrypt
-from exceptions import NetworkException
+from utility.encryption import encrypt, decrypt
+from utility.exceptions import NetworkException
 from time import sleep
 from network import NetworkQuery
 from genome import Genome
@@ -52,6 +52,3 @@ class Preset:
         response = query.do_query()
         if not response[0]:
             raise NetworkException
-        
-        
-    

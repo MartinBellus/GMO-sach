@@ -1,6 +1,6 @@
 import requests
-from constants import HTTP_URL
-from exceptions import NetworkException, RemoteFileNotFound
+from utility.constants import HTTP_URL
+from utility.exceptions import NetworkException, RemoteFileNotFound
 import time
 
 POST_ATTEMPTS = 5

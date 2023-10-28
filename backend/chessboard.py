@@ -1,9 +1,9 @@
-from enums import *
+from utility.enums import *
 from move_descriptor import MoveDescriptor
 from genome import Genome
 from piece import Piece
-from vector import Vector
-from constants import *
+from utility.vector import Vector
+from utility.constants import *
 from preset import Preset
 from collections import namedtuple
 

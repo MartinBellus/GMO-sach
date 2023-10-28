@@ -1,8 +1,8 @@
 import requests
 from time import sleep
-from encryption import encrypt, decrypt
-from constants import *
-from exceptions import NetworkException
+from utility.encryption import encrypt, decrypt
+from utility.constants import *
+from utility.exceptions import NetworkException
 from network import NetworkQuery
 
 

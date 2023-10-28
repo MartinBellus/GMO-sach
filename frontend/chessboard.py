@@ -1,10 +1,10 @@
 import tkinter
 from PIL import Image, ImageTk
-from chessboard import Chessboard, PieceInfo
-from constants import *
-from vector import Vector, inside_chessboard 
-from move_descriptor import MoveDescriptor
-from enums import *
+from backend.chessboard import Chessboard, PieceInfo
+from backend.move_descriptor import MoveDescriptor
+from utility.constants import *
+from utility.vector import Vector, inside_chessboard 
+from utility.enums import *
 
 class Color():
     #           BIELE       CIERNE
@@ -13,12 +13,6 @@ class Color():
     MOVE =      ["#b7d171"  ,"#87a65a"]
     ATTACK =    ["#eb7b6a"  ,"#cb645e"]
     SHOOT =     ["green"    ,"green"]
-
-WIDTH = 500
-HEIGHT = 500
-PADDING = 30
-SIZE_X = (WIDTH-PADDING*2)/BOARD_X
-SIZE_Y = (HEIGHT-PADDING*2)/BOARD_Y
 
 class ChessboardUI:
     squares : list[int] = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
@@ -31,7 +25,7 @@ class ChessboardUI:
         self.chessboard_canvas = tkinter.Canvas(root,height=HEIGHT,width=HEIGHT,bg="yellow")
         self.chessboard_canvas.pack()
         self.chessboard_canvas.bind("<Button-1>",self.on_click)
-        self.chessboard_canvas.images = []
+        self.chessboard_canvas.images : list[ImageTk.PhotoImage]= []
         for r in range(BOARD_Y):
             for c in range(BOARD_X):
                 self.squares[r][c] = self.chessboard_canvas.create_rectangle(SIZE_X*c + PADDING,    SIZE_Y*r + PADDING,
@@ -47,6 +41,7 @@ class ChessboardUI:
         if __name__ == "__main__":
             self.controller._insert_piece(Piece(Genome(PAWN_DNA),colors.BLACK,1),Vector(0,0))
             self.controller._insert_piece(Piece(Genome(PAWN_DNA),colors.BLACK,1),Vector(1,1))
+            self.controller._insert_piece(Piece(Genome(PAWN_DNA),colors.WHITE,1),Vector(2,2))
 
         self.draw_all()
 
@@ -91,7 +86,11 @@ class ChessboardUI:
             for c in range(BOARD_X):
                 if state[r][c] != None:
                     # nakresli na dane policko figurku
-                    image : str = "images/Amethyst.png"
+                    # TODO image selector
+                    if state[r][c].color == colors.WHITE:
+                        image : str = "images/Bar_of_Soap.png"
+                    else:
+                        image : str = "images/Anchor.png"
                     img = ImageTk.PhotoImage(Image.open(image).resize((int(SIZE_X),int(SIZE_Y))))
                     self.chessboard_canvas.images.append(img)
                     self.chessboard_canvas.create_image(PADDING + (c + 0.5)*SIZE_X,PADDING + (r + 0.5)*SIZE_Y,image=img,tag = "piece")
@@ -104,10 +103,11 @@ class ChessboardUI:
 
 if __name__ == "__main__":
     # for testing
-    from piece import Piece
-    from genome import Genome
+    from backend.piece import Piece
+    from backend.genome import Genome
     root = tkinter.Tk()
 
     sachovnica = ChessboardUI(root,1)
+    sachovnica2 = ChessboardUI(root,0)
 
     tkinter.mainloop()

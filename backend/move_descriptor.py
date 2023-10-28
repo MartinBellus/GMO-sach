@@ -1,5 +1,5 @@
-from enums import *
-from vector import Vector
+from utility.enums import *
+from utility.vector import Vector
 
 class MoveDescriptor:
     def __init__(self, original_position:Vector, to_position:Vector, square_from:(which_piece, players), square_to:(which_piece, players)):

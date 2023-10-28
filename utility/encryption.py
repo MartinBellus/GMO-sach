@@ -1,4 +1,3 @@
-
 ENCRYPTION_KEY = "1gSD89IsdfjIie4gs454G2werg3W23gw3GW8WGwg5wG8sU4Euer3434urt6u4s64g8KHGWERg64sfg"
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
 LETTER_TO_INDEX = {letter: index for index, letter in enumerate(ALPHABET)}
