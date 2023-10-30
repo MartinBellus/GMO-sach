@@ -20,7 +20,7 @@ def fetch_genome(hash: str) -> str:
 
     encrypted_hash = encrypt(hash)
 
-    query=NetworkQuery("genome", "GET", hash)
+    query=NetworkQuery("genome", "GET", encrypted_hash)
     response = query.do_get()
     if not response[0]:
         raise NetworkException

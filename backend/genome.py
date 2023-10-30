@@ -246,8 +246,8 @@ class Spirulateral:
 
 class Genome:
     def __init__(self, dna: str):
-        dna = remove_blank(dna)
-        self.dna = DnaStream(dna)
+        self.raw_dna : str = remove_blank(dna)
+        self.dna = DnaStream(self.raw_dna)
         self.spirulaterals: list[Spirulateral] = []
         self.parse_dna()
 
