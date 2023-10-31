@@ -27,6 +27,12 @@ class Chessboard:
         piece = Piece(genome, color, is_pawn, is_king)
         self._insert_piece(piece, position)
 
+    def insert_piece_by_dna(self, dna: str, color: colors, position: Vector, is_pawn=False, is_king=False):
+        assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
+        genome = Genome(dna)
+        piece = Piece(genome, color, is_pawn, is_king)
+        self._insert_piece(piece, position)
+
     def erase_piece(self, pos: Vector):
         assert self.sandbox, "erase_piece only available in sandbox, in real games use presets"
         self._erase_piece(pos)
@@ -172,7 +178,7 @@ class Chessboard:
         self.need_to_promote = False
 
     def load_preset(self, preset: Preset | str, color: colors):
-        if type(preset) == str: #if we are given a preset hash, we need to fetch it
+        if type(preset) == str:  # if we are given a preset hash, we need to fetch it
             preset = Preset.fetch_preset(preset)
         if not self.sandbox:
             assert self.turn_number == 0
