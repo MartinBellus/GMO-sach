@@ -250,6 +250,8 @@ class Genome:
         self.dna = DnaStream(dna)
         self.spirulaterals: list[Spirulateral] = []
         self.parse_dna()
+        #TODO:uncomment - code will stop working without server running
+        #self.save()
 
     def parse_dna(self) -> None:
         while self.dna.has_next():

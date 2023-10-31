@@ -2,3 +2,5 @@
 __pycache__
 images/*
 *.todo
+server/preset
+server/genome
