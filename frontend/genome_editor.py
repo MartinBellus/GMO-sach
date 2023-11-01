@@ -1,23 +1,25 @@
 import tkinter
 from tkinter import filedialog
-from tkinter.messagebox import showinfo
+from frontend.chessboard import ChessboardUI
 
 
 class EditorUI(tkinter.Frame):
-    def __init__(self,parent : tkinter.Tk,**args):
+    def __init__(self,parent : tkinter.Tk,ui : ChessboardUI,**args):
         super().__init__(parent,**args)
         self.editor : GenomeEditor = GenomeEditor(self)
         self.file_selector : FileSelector = FileSelector(self,self.editor)
-        # TODO image preview? drag and drop
+        self.place_buttom : tkinter.Button = tkinter.Button(self,text="Place piece",command=lambda : ui.place_piece(self.get_text(),4,4))
+        # TODO image preview? x,y input import
 
     def get_text(self) -> str:
         return self.editor.get("1.0","end")
 
     def pack(self,**args):
-        super().pack(fill="both",expand=True,**args)
+        super().pack(fill="x",expand=True,**args)
         super().pack_propagate(False)
         self.editor.pack(fill="both",expand=True)
         self.file_selector.pack(side="bottom")
+        self.place_buttom.pack()
         
 class GenomeEditor(tkinter.Text):
     def __init__(self,parent):
@@ -28,7 +30,6 @@ class GenomeEditor(tkinter.Text):
         super().insert("1.0",content)
 
 class FileSelector(tkinter.Button):
-
     def __init__(self,parent,target : GenomeEditor):
         super().__init__(parent,text="Open Genome",command=self.select_files)
         self.target : GenomeEditor = target
