@@ -79,7 +79,7 @@ class Chessboard:
             return []
 
         # get simplified board to pass to genome
-        board = self.get_piece_owners(self.chessboard[coords].color)
+        board = self._get_piece_owners(self.chessboard[coords].color)
         genome = self.chessboard[coords].genome
         moves = genome.get_moves(board, coords)
 
