@@ -56,7 +56,7 @@ class Chessboard:
     def _insert_piece(self, piece: Piece, position: Vector):
         self.chessboard[position] = piece
 
-    def get_piece_owners(self, colour: colors) -> dict[Vector, players]:
+    def _get_piece_owners(self, colour: colors) -> dict[Vector, players]:
         ans: dict[Vector, players] = {}
 
         for i in self.chessboard:
