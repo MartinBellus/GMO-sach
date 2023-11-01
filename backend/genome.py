@@ -2,17 +2,12 @@ from utility.enums import *
 from utility.vector import Vector, inside_chessboard
 from backend.move_descriptor import MoveDescriptor
 from backend.genome_cache import fetch_genome, upload_genome
+from utility.exceptions import InvalidGenomeException, OutOfCodons
 from copy import copy
 import hashlib
 import re
 
 
-class InvalidGenomeException(Exception):
-    pass
-
-
-class OutOfCodons(InvalidGenomeException):
-    pass
 
 
 def remove_blank(s: str) -> str:
@@ -190,7 +185,7 @@ class Spirulateral:
                 chessboard, position, starting_direction, -1)
             ans.extend(moves)
         return ans
-
+ 
     def generate_moves_in_direction(self, chessboard: dict[Vector, players], position: Vector, direction: int, delta: int) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
 
@@ -298,11 +293,11 @@ class Genome:
             ans.append(move)
 
         return ans
-
+    
     @classmethod
     def from_hash(cls, hash: str):
         return cls(fetch_genome(hash))
-
+        
     def save(self):
         upload_genome(self.hash(), self.dna.get_string())
 
