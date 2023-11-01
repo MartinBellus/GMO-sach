@@ -16,7 +16,6 @@ class EditorUI(tkinter.Frame):
 
     def pack(self,**args):
         super().pack(fill="x",expand=True,**args)
-        super().pack_propagate(False)
         self.editor.pack(fill="both",expand=True)
         self.file_selector.pack(side="bottom")
         self.place_buttom.pack()
