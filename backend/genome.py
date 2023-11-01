@@ -2,20 +2,17 @@ from utility.enums import *
 from utility.vector import Vector, inside_chessboard
 from backend.move_descriptor import MoveDescriptor
 from backend.genome_cache import fetch_genome, upload_genome
+from utility.exceptions import InvalidGenomeException, OutOfCodons
 from copy import copy
 import hashlib
 import re
 
 
-class InvalidGenomeException(Exception):
-    pass
 
 
-class OutOfCodons(InvalidGenomeException):
-    pass
+def remove_blank(s: str) -> str:
+    return re.sub(r'\s', '', s)
 
-def remove_blank(s : str) -> str:
-    return re.sub(r'\s','',s)
 
 def genome_assert(condition: bool, message: str = "Invalid genome."):
     if not condition:
@@ -188,8 +185,8 @@ class Spirulateral:
                 chessboard, position, starting_direction, -1)
             ans.extend(moves)
         return ans
-
-    def generate_moves_in_direction(self, chessboard : dict[Vector,players], position: Vector, direction: int, delta: int) -> list[MoveDescriptor]:
+ 
+    def generate_moves_in_direction(self, chessboard: dict[Vector, players], position: Vector, direction: int, delta: int) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
 
         direction_vectors = [Vector(0, 1), Vector(
@@ -217,8 +214,8 @@ class Spirulateral:
                 moves.append(self.make_move_descriptor(
                     chessboard, current_position, position))
 
-            # when we hit a piece, the spirulateral ends
-            if current_position in chessboard:
+            # when we hit a piece, the spirulateral ends but only if the move is coloring
+            if current_position in chessboard and self.parts[i].coloring:
                 break
 
             # go to the next part of the spirulateral
@@ -250,6 +247,8 @@ class Genome:
         self.dna = DnaStream(self.raw_dna)
         self.spirulaterals: list[Spirulateral] = []
         self.parse_dna()
+        # TODO:uncomment - code will stop working without server running
+        # self.save()
 
     def parse_dna(self) -> None:
         while self.dna.has_next():
@@ -276,7 +275,7 @@ class Genome:
     def hash(self) -> str:
         return hashlib.sha256(self.dna.get_string().encode()).hexdigest()[:6]
 
-    def get_moves(self, chessboard: dict[Vector,players], position: Vector) -> list[MoveDescriptor]:
+    def get_moves(self, chessboard: dict[Vector, players], position: Vector) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
         for spirulateral in self.spirulaterals:
             moves.extend(spirulateral.get_moves(chessboard, position))
@@ -296,12 +295,11 @@ class Genome:
         return ans
     
     @classmethod
-    def from_hash(cls, hash:str):
+    def from_hash(cls, hash: str):
         return cls(fetch_genome(hash))
-    
+        
     def save(self):
         upload_genome(self.hash(), self.dna.get_string())
-
 
 
 # TESTING

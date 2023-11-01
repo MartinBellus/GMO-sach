@@ -27,6 +27,12 @@ class Chessboard:
         piece = Piece(genome, color, is_pawn, is_king)
         self._insert_piece(piece, position)
 
+    def insert_piece_by_dna(self, dna: str, color: colors, position: Vector, is_pawn=False, is_king=False):
+        assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
+        genome = Genome(dna)
+        piece = Piece(genome, color, is_pawn, is_king)
+        self._insert_piece(piece, position)
+
     def erase_piece(self, pos: Vector):
         assert self.sandbox, "erase_piece only available in sandbox, in real games use presets"
         self._erase_piece(pos)
@@ -68,6 +74,10 @@ class Chessboard:
             # raise Exception("No piece at given coordinates")
             return []
 
+        color = self.chessboard[coords].color
+        if not self.sandbox and color != self.get_current_player():
+            return []
+
         # get simplified board to pass to genome
         board = self.get_piece_owners(self.chessboard[coords].color)
         genome = self.chessboard[coords].genome
@@ -88,8 +98,7 @@ class Chessboard:
         other_color = colors.WHITE if color == colors.BLACK else colors.BLACK
 
         if not self.sandbox:
-            assert (color == colors.WHITE and self.turn_number % 2 == 0) or (
-                color == colors.BLACK and self.turn_number % 2 == 1), "Wrong player's turn"
+            assert color == self.get_current_player(), "Wrong player's turn"
 
             # TODO: should this be mandatory?
             assert not self.need_to_promote, "Pawn promotion is required before making a move"
@@ -168,7 +177,9 @@ class Chessboard:
         self.chessboard[position].set_genome(new_genome)
         self.need_to_promote = False
 
-    def load_preset(self, preset: Preset, color: colors):
+    def load_preset(self, preset: Preset | str, color: colors):
+        if type(preset) == str:  # if we are given a preset hash, we need to fetch it
+            preset = Preset.fetch_preset(preset)
         if not self.sandbox:
             assert self.turn_number == 0
 
@@ -206,10 +217,12 @@ class Chessboard:
     def get_board_for_reading(self) -> list[list[None | PieceInfo]]:
         res = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
 
-        # TODO
         for i in self.chessboard:
             piece = self.chessboard[i]
             res[i.y][i.x] = PieceInfo(
                 piece.genome.hash(), piece.color, piece.is_pawn, piece.is_king)
 
         return res
+
+    def get_current_player(self):
+        return colors.WHITE if self.turn_number % 2 == 0 else colors.BLACK

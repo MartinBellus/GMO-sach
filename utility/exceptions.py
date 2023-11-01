@@ -3,3 +3,10 @@ class NetworkException(Exception):
 
 class RemoteFileNotFound(Exception):
     pass
+
+class InvalidGenomeException(Exception):
+    pass
+
+
+class OutOfCodons(InvalidGenomeException):
+    pass
