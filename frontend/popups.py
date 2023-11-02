@@ -33,3 +33,6 @@ class PopupWindow(tkinter.Toplevel):
         
         except RemoteFileNotFound:
             self.status.config(text="Invalid key",fg="Red")
+
+        except Exception as ex:
+            self.status.config(text=ex,fg="Red")
