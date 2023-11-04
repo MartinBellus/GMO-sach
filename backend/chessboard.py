@@ -6,6 +6,7 @@ from utility.vector import Vector
 from utility.constants import *
 from backend.preset import Preset
 from collections import namedtuple
+from backend.chessclock import ChessClock
 
 PieceInfo = namedtuple(
     "PieceInfo", ["genome_hash", "color", "is_pawn", "is_king"])
@@ -13,13 +14,14 @@ PieceInfo = namedtuple(
 
 class Chessboard:
     def __init__(self, sandbox: bool = False):
-        self.chessboard: dict[Vector, Piece] = {}
-        self.current_descriptors: dict[Vector, MoveDescriptor] = {}
+        self.chessboard: dict[Vector, Piece] = dict()
+        self.current_descriptors: dict[Vector, MoveDescriptor] = dict()
         self.need_to_promote: bool = False
+        self.game_status: GameStatus = GameStatus.NOT_STARTED
+        self.promotions: list[Vector] = list()
         self.turn_number: int = 0
         self.sandbox: bool = sandbox
-        self.king_counts: dict[colors, int] = {
-            colors.WHITE: 0, colors.BLACK: 0}
+        self.clock: ChessClock = ChessClock(TIME_PER_PLAYER)
 
     def insert_piece(self, genome_hash: str, color: colors, position: Vector, is_pawn=False, is_king=False):
         assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
@@ -39,11 +41,9 @@ class Chessboard:
 
     def set_king(self, position: Vector):
         if not self.sandbox:
-            assert self.turn_number == 0, "Can't set king after the game has begun."
+            assert self.game_status == GameStatus.NOT_STARTED, "Can't set king after the game has begun."
         if position in self.chessboard:
             self.chessboard[position].is_king = True
-            color = self.chessboard[position].color
-            self.king_counts[color] += 1
         else:
             raise IndexError
 
@@ -69,10 +69,16 @@ class Chessboard:
         if coords in self.current_descriptors:
             return self.current_descriptors[coords]
 
+        if not self.sandbox:
+            assert self.game_status == GameStatus.IN_PROGRESS, "Game state is not in_progress"
+
         # check if there is a piece at the given coords
         if coords not in self.chessboard:
             # raise Exception("No piece at given coordinates")
             return []
+
+        if not self.sandbox:
+            assert self.get_promotion is None, "Pawn promotion is required before making a move"
 
         color = self.chessboard[coords].color
         if not self.sandbox and color != self.get_current_player():
@@ -90,6 +96,22 @@ class Chessboard:
     def __repr__(self):
         return "Chessboard: " + "".join([f"{i}:{self.chessboard[i]}\n" for i in self.chessboard])
 
+    def count_kings(self, color: colors) -> int:
+        ans = 0
+        for i in self.chessboard:
+            if self.chessboard[i].color == color and self.chessboard[i].is_king:
+                ans += 1
+        return ans
+
+    def start_game(self):
+        if not self.sandbox:
+            assert self.game_status == GameStatus.NOT_STARTED, "Game has already started"
+            assert self.turn_number == 0, "Game has already started"
+            assert self.count_kings(colors.WHITE) >= 1, "White king is missing"
+            assert self.count_kings(colors.BLACK) >= 1, "Black king is missing"
+        self.game_status = GameStatus.IN_PROGRESS
+        self.clock.start(colors.WHITE)
+
     def do_move(self, descriptor: MoveDescriptor) -> GameStatus:
 
         # check if its the correct player's turn
@@ -100,10 +122,10 @@ class Chessboard:
         if not self.sandbox:
             assert color == self.get_current_player(), "Wrong player's turn"
 
-            # TODO: should this be mandatory?
-            assert not self.need_to_promote, "Pawn promotion is required before making a move"
-            assert self.king_counts[colors.WHITE], "There is no white king"
-            assert self.king_counts[colors.BLACK], "There is no black king"
+            assert self.get_promotion() is None, "Pawn promotion is required before making a move"
+
+            if self.get_status() != GameStatus.IN_PROGRESS:
+                return self.get_status()
 
         assert descriptor.original_position in self.current_descriptors, "Invalid move descriptor"
         assert descriptor in self.current_descriptors[descriptor.original_position], "Invalid move descriptor"
@@ -157,31 +179,63 @@ class Chessboard:
         # board state has changed, descriptors are invalidated
         self.current_descriptors.clear()
 
-        if to_pos in self.chessboard and self.chessboard[to_pos].is_pawn:
-            if to_pos.y == 0 and self.chessboard[to_pos].color == colors.WHITE:
-                self.need_to_promote = True
-                return GameStatus.PROMOTION_POSSIBLE
-            if to_pos.y == BOARD_Y-1 and self.chessboard[to_pos].color == colors.BLACK:
-                self.need_to_promote = True
-                return GameStatus.PROMOTION_POSSIBLE
+        self._calculate_promotions()
 
-            # so far ignore weird case when opponent pawn is moved into my home row and technically can promote
+        # check for promotions
 
-        return GameStatus.IN_PROGRESS
+        self.clock.pause()
+        self.clock.start(self.get_current_player())
 
-    def promote(self, position, new_genome: Genome) -> None:
-        assert position in self.chessboard and self.chessboard[position].is_pawn, "Invalid promotion"
-        color = self.chessboard[position].color
-        assert (color == colors.WHITE and position.y == 0) or (
-            color == colors.BLACK and position.y == BOARD_Y-1), "Invalid promotion"
-        self.chessboard[position].set_genome(new_genome)
+        return self.get_status()
+    def _calculate_promotions(self) -> None:
+        for (pos, piece) in self.chessboard.items():
+            if piece.is_pawn:
+                if (pos.y == 0 and piece.color == colors.BLACK) or (pos.y == BOARD_Y - 1 and piece.color == colors.WHITE):
+                    self.promotions.append(pos)
+
+    def get_promotion(self) -> tuple[Vector, colors] | None:
+        if self.promotions:
+            pos = self.promotions[0]
+            return (pos, self.chessboard[pos].color)
+        else:
+            return None
+
+    def promote(self, position, new_genome_hash: str) -> None:
+        assert self.get_promotion is not None, "No promotions available"
+        assert position == self.promotions[0], "Invalid promotion position"
+
+        self.clock.pause()
+
+        old_piece = self.chessboard[position]
+
+        new_genome = Genome.from_hash(new_genome_hash)
+        self.clock.start(old_piece.color)
+
+        self.chessboard[position] = Piece(
+            new_genome, old_piece.color, is_king=old_piece.is_king)
         self.need_to_promote = False
+        self.promotions.pop(0)
+
+        self.clock.start(self.get_current_player())
+    
+    def get_remaining_time(self, color: colors) -> float:
+        return self.clock.get_time(color)
+
+    def get_status(self):
+        if self.game_status != GameStatus.IN_PROGRESS:
+            return self.game_status
+
+        if self.get_remaining_time(colors.WHITE) <= 0:
+            self.game_status = GameStatus.BLACK_WON
+        elif self.get_remaining_time(colors.BLACK) <= 0:
+            self.game_status = GameStatus.WHITE_WON
+        return self.game_status
 
     def load_preset(self, preset: Preset | str, color: colors):
         if type(preset) == str:  # if we are given a preset hash, we need to fetch it
             preset = Preset.fetch_preset(preset)
         if not self.sandbox:
-            assert self.turn_number == 0
+            assert self.game_status == GameStatus.NOT_STARTED, "Can't load preset after the game has begun."
 
         if color == colors.WHITE:
             row = 0
@@ -225,4 +279,7 @@ class Chessboard:
         return res
 
     def get_current_player(self):
+        promotion = self.get_promotion()
+        if promotion is not None:
+            return promotion[1]
         return colors.WHITE if self.turn_number % 2 == 0 else colors.BLACK

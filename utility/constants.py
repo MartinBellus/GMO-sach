@@ -5,6 +5,7 @@ BOARD_Y = 8
 WIDTH = 500
 HEIGHT = 500
 
+TIME_PER_PLAYER = 60 * 8
 
 HTTP_URL = "http://localhost:5000/"
 
