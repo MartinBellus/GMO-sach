@@ -159,12 +159,12 @@ class ChessboardUI(tkinter.Canvas):
             super().itemconfig(self.squares[where.y][where.x],fill=Color.DEFAULT[where.parity()])
 
     def place_piece(self, dna : str,color : colors, x : int, y : int):
-        self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
+        self.controller.insert_piece_by_dna(dna,color,Vector(x,y),False,True)
         self.redraw_pieces()
 
     def place_piece_hash(self,hash : str, color: colors, x : int, y : int):
         try:
-            self.controller.insert_piece(hash,color,Vector(x,y))
+            self.controller.insert_piece(hash,color,Vector(x,y),False,True)
         except Exception as ex:
             raise ex
         self.redraw_pieces()

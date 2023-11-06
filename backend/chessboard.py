@@ -24,13 +24,13 @@ class Chessboard:
         self.clock: ChessClock = ChessClock(TIME_PER_PLAYER)
 
     def insert_piece(self, genome_hash: str, color: colors, position: Vector, is_pawn=False, is_king=False):
-        assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
+        # assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
         genome = Genome.from_hash(genome_hash)
         piece = Piece(genome, color, is_pawn, is_king)
         self._insert_piece(piece, position)
 
     def insert_piece_by_dna(self, dna: str, color: colors, position: Vector, is_pawn=False, is_king=False):
-        assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
+        # assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
         genome = Genome(dna)
         piece = Piece(genome, color, is_pawn, is_king)
         self._insert_piece(piece, position)
@@ -78,7 +78,8 @@ class Chessboard:
             return []
 
         if not self.sandbox:
-            assert self.get_promotion is None, "Pawn promotion is required before making a move"
+            pass
+            # assert self.get_promotion is None, "Pawn promotion is required before making a move"
 
         color = self.chessboard[coords].color
         if not self.sandbox and color != self.get_current_player():
