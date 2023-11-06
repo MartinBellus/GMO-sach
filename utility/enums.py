@@ -44,5 +44,7 @@ class GameStatus(Enum):
     DRAW = auto()
     IN_PROGRESS = auto()
     NOT_STARTED = auto()
+    START_GAME = auto()
+    LAB = auto()
     
 game_over_statuses = (GameStatus.BLACK_WON, GameStatus.WHITE_WON, GameStatus.DRAW)

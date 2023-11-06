@@ -1,8 +1,7 @@
 import tkinter
 from utility.exceptions import NetworkException, RemoteFileNotFound
 
-class PopupWindow(tkinter.Toplevel):
-
+class InputPopup(tkinter.Toplevel):
     def __init__(self,title : str,text : str, callback, **args):
         super().__init__(**args)
         super().title(title)
@@ -26,7 +25,7 @@ class PopupWindow(tkinter.Toplevel):
         try:
             self.status.config(text="Loading...",fg="Blue")
             self.callback(self.entry.get())
-            self.status.config(text="Loaded succesfully",fg="Green")
+            self.status.config(text="Successful",fg="Green")
             print("fung")
         except NetworkException:
             self.status.config(text="Server can not be reached",fg="Red")
@@ -36,3 +35,12 @@ class PopupWindow(tkinter.Toplevel):
 
         except Exception as ex:
             self.status.config(text=ex,fg="Red")
+
+class TextPopup(tkinter.Toplevel):
+    def __init__(self,title : str, *args,**kwargs):
+        super().__init__(**kwargs)
+        super().title(title)
+        super().resizable(False,False)
+        for text in args:
+            main_text = tkinter.Label(self,text=text,font=("Consolas",15),wraplength=400,justify="left",anchor="w")
+            main_text.pack(anchor="w",fill="x",expand=True,pady=20,padx=15)

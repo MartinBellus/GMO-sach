@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import filedialog
 from frontend.chessboard import ChessboardUI
+from utility.enums import colors
 
 
 class EditorUI(tkinter.Frame):
@@ -9,22 +10,29 @@ class EditorUI(tkinter.Frame):
         self.ui = ui
         self.editor : GenomeEditor = GenomeEditor(self)
         self.file_selector : FileSelector = FileSelector(self,self.editor)
-        self.place_buttom : tkinter.Button = tkinter.Button(self,text="Place piece",command=lambda : ui.place_piece(self.get_text(),4,4))
+        # self.place_buttom : tkinter.Button = tkinter.Button(self,text="Place piece",command=lambda : ui.place_piece(self.get_text(),colors.WHITE,4,4))
         self.place_button : PlaceButton = PlaceButton(self,self.place_piece)
-        # TODO image preview? x,y input import
 
     def get_text(self) -> str:
         return self.editor.get("1.0","end")
 
-    def place_piece(self,x,y,color):
-        self.ui.place_piece(self.get_text(),x,y)
+    def place_piece(self,color : colors,x,y):
+        self.ui.place_piece(self.get_text(),color,x,y)
+    
+    def save_to(self,name : str):
+        try:
+            with open(name,"w") as file:
+                file.write(self.get_text())
+        except Exception as ex:
+            raise ex
+
 
     def pack(self,**args):
         super().pack(fill="x",expand=True,**args)
         self.editor.pack(fill="both",expand=True)
         self.file_selector.pack(side="bottom")
-        self.place_buttom.pack()
-        self.place_button.pack()
+        # self.place_buttom.pack()
+        self.place_button.pack(pady=5)
 
         
 class GenomeEditor(tkinter.Text):
@@ -58,29 +66,28 @@ class FileSelector(tkinter.Button):
 class PlaceButton(tkinter.Frame):
     def __init__(self,parent,callback,**kwargs):
         super().__init__(parent,**kwargs)
-        self.bind_all("<Return>",self.on_click)
         self.callback = callback
         self.place_button = tkinter.Button(self,text="Place piece",command=self.on_click)
         self.color_button = tkinter.Button(self,command=self.change_state,text="W",bg="white",font=("Consolas",12))
         self.form = tkinter.Entry(self,font=("Consolas",12),width=2)
         self.form.insert(0,"A1")
-        self.state = 0
+        self.state : colors = colors.WHITE 
 
     def on_click(self,*args):
         try:
             x : int = int(self.form.get()[1]) - 1
             y : int = ord(self.form.get()[0].lower()) - ord('a')
-            self.callback(x,y,self.state)
+            self.callback(self.state,x,y)
         except:
-            self.callback(0,0,self.state)
+            self.callback(self.state,0,0)
     
     def change_state(self):
-        if self.state == 0:
+        if self.state == colors.WHITE:
             self.color_button.config(text="B",bg="black",fg="white")
+            self.state = colors.BLACK
         else:
             self.color_button.config(text="W",bg="white",fg="black")
-
-        self.state = (self.state+1)%2
+            self.state = colors.WHITE
 
     def pack(self,**kwargs):
         super().pack(**kwargs)
