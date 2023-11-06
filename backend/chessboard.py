@@ -122,7 +122,7 @@ class Chessboard:
         if not self.sandbox:
             assert color == self.get_current_player(), "Wrong player's turn"
 
-            assert self.get_promotion() is None, "Pawn promotion is required before making a move"
+            assert self.get_promotion() is not None, "Pawn promotion is required before making a move"
 
             if self.get_status() != GameStatus.IN_PROGRESS:
                 return self.get_status()
@@ -209,7 +209,6 @@ class Chessboard:
         old_piece = self.chessboard[position]
 
         new_genome = Genome.from_hash(new_genome_hash)
-        self.clock.start(old_piece.color)
 
         self.chessboard[position] = Piece(
             new_genome, old_piece.color, is_king=old_piece.is_king)
