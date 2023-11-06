@@ -23,4 +23,5 @@ class ChessClock:
         self.clock_start_time = None
     
     def get_time(self, color: colors):
+        self.update_remaining_time()
         return self.remaining_time[color]
