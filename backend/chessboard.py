@@ -78,8 +78,7 @@ class Chessboard:
             return []
 
         if not self.sandbox:
-            pass
-            # assert self.get_promotion is None, "Pawn promotion is required before making a move"
+            assert self.get_promotion() is None, "Pawn promotion is required before making a move"
 
         color = self.chessboard[coords].color
         if not self.sandbox and color != self.get_current_player():
@@ -123,7 +122,7 @@ class Chessboard:
         if not self.sandbox:
             assert color == self.get_current_player(), "Wrong player's turn"
 
-            assert self.get_promotion() is not None, "Pawn promotion is required before making a move"
+            assert self.get_promotion() is None, "Pawn promotion is required before making a move"
 
             if self.get_status() != GameStatus.IN_PROGRESS:
                 return self.get_status()

@@ -11,10 +11,11 @@ class ChessClockUI(tkinter.Frame):
         self.update()
 
     def update(self):
-        print("update")
-        self.white_time.config(text=f"{self.controller.get_remaining_time(colors.WHITE)}")
-        self.black_time.config(text=f"{self.controller.get_remaining_time(colors.BLACK)}")
-        if self.controller.get_current_player == colors.WHITE:
+        white_time_left = int(self.controller.get_remaining_time(colors.WHITE))
+        black_time_left = int(self.controller.get_remaining_time(colors.BLACK))
+        self.white_time.config(text=f"{white_time_left//60:02}:{white_time_left%60:02}")
+        self.black_time.config(text=f"{black_time_left//60:02}:{black_time_left%60:02}")
+        if self.controller.get_current_player() == colors.WHITE:
             self.white_time.config(font=("Consolas",20,"bold"))
             self.black_time.config(font=("Consolas",20))
         else:
