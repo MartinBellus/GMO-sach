@@ -4,6 +4,7 @@ BOARD_Y = 8
 # UI constants
 WIDTH = 500
 HEIGHT = 500
+IMAGE_DIR = "images/"
 
 TIME_PER_PLAYER = 60 * 8
 

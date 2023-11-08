@@ -2,6 +2,7 @@ import os
 import random
 from PIL import Image,ImageTk
 from utility.enums import colors
+from utility.constants import *
 
 def adjust(px : tuple,const : float = 1):
     return (int(px[0]*const),int(px[1]*const),int(px[2]*const),px[3])
@@ -10,10 +11,9 @@ class ImageSelector:
     images : list[Image.Image] = []
     def __init__(self,width : int = 50,height : int = 50):
         # load all images
-        for file in os.listdir("images"):
+        for file in os.listdir(IMAGE_DIR):
             try:
-                print("images/"+file)
-                self.images.append(Image.open("images/" + file).resize((width,height)))
+                self.images.append(Image.open(IMAGE_DIR + file).resize((width,height)))
             except Exception as ex:
                 print(ex)
 
