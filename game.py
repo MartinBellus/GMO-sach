@@ -1,17 +1,15 @@
 from frontend.chessboard import ChessboardUI
-from frontend.genome_editor import EditorUI
-from frontend.popups import InputPopup,TextPopup
+from frontend.popups import InputPopup, TextPopup
 from frontend.menu import Menu
+from frontend.chessclock import ChessClockUI
 from backend.chessboard import Chessboard
-from backend.genome import Genome
 from utility.constants import *
-from utility.enums import colors
+from utility.enums import colors, GameStatus
 import tkinter
 
-
-def help():
-    # TODO
-    TextPopup("Help","glupy si")
+def start_game():
+    if controller.game_status == GameStatus.NOT_STARTED:
+        ui.switch_state(GameStatus.START_GAME)
 
 def white_preset():
     InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x:ui.place_preset(x,colors.WHITE))
@@ -19,30 +17,27 @@ def white_preset():
 def black_preset():
     InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x: ui.place_preset(x,colors.BLACK))
 
-def save_as():
-    InputPopup("Save piece as","Path to file, where you want to save piece",lambda x:editor.save_to(x))
- 
-def fetch():
-    InputPopup("Fetch piece from key","Insert piece code, it will be loaded into code editor.",lambda x: editor.editor.set_text(Genome.from_hash(x).raw_dna))
+def help():
+    # TODO
+    TextPopup("Help","glupy si")
 
 if __name__ == "__main__":
     root = tkinter.Tk()
-    root.title("LAB")
-    controller = Chessboard(1)
+    controller = Chessboard()
     ui = ChessboardUI(root,controller,width=WIDTH,height=HEIGHT)
-    editor = EditorUI(root,ui,width=100,height=HEIGHT)
+    clock = ChessClockUI(root,controller,height=HEIGHT,width= 100)
 
     buttons = [
-        ("Reset",lambda : ui.reset()),
+        ("Start Game",start_game),
         ("Place White Preset",white_preset),
         ("Place Black Preset",black_preset),
-        ("Save Piece",save_as),
-        ("Fetch Piece",fetch),
+        ("",lambda : 0),
         ("Help",help),
     ]
 
     menu = Menu(root,*buttons,height = 30,width = WIDTH)
     menu.pack(anchor = "n",pady=10,fill="x",expand=True)
     ui.pack(side="left")
-    editor.pack(side="right")
+    clock.pack(side = "right",fill="x",expand=True)
+
     tkinter.mainloop()

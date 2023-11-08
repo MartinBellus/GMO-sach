@@ -1,6 +1,7 @@
 import tkinter
 from PIL import Image, ImageTk
 from frontend.popups import TextPopup
+from frontend.image_selector import ImageSelector
 from backend.chessboard import Chessboard, PieceInfo
 from backend.move_descriptor import MoveDescriptor
 from backend.genome import Genome
@@ -38,6 +39,7 @@ class ChessboardUI(tkinter.Canvas):
         self.size_y = (height - PADDING*2)/BOARD_Y
         self.height = height
         self.width = width
+        self.selector : ImageSelector = ImageSelector(int(self.size_x),int(self.size_y))
 
         for r in range(BOARD_Y):
             for c in range(BOARD_X):
@@ -145,11 +147,7 @@ class ChessboardUI(tkinter.Canvas):
                 if state[invert(r)][c] != None:
                     # nakresli na dane policko figurku
                     # TODO image selector
-                    if state[invert(r)][c].color == colors.WHITE:
-                        image : str = "images/Bar_of_Soap.png"
-                    else:
-                        image : str = "images/Anchor.png"
-                    img = ImageTk.PhotoImage(Image.open(image).resize((int(self.size_x),int(self.size_y))))
+                    img = self.selector.get_image(state[invert(r)][c].genome_hash,state[invert(r)][c].color)
                     self.images.append(img)
                     super().create_image(PADDING + (c + 0.5)*self.size_x,PADDING + (r + 0.5)*self.size_y,image=img,tag = "piece")
 
