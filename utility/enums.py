@@ -19,7 +19,15 @@ class control_codons(StrEnum, metaclass=MyEnumMeta):
     SEPARATOR_END = "HHA"
 
 class debuff_codons(StrEnum, metaclass=MyEnumMeta):
-    TEST_DEBUFF = "HAA"
+    FORWARD_ONLY = "HAS"
+    SPIRULATERAL_ONLY_REPEATS_ONCE = "HAC"
+    NO_TELEPORTING_BETWEEN_SIDES = "HAA"
+    ONLY_CAN_COLOR_SAME_COLOR = "HCA"
+    ONLY_CAN_COLOR_DIFFERENT_COLOR = "HCS"
+    ONLY_CAN_COLOR_NEIGHBOURS = "HSS"
+    GAME_FREEZES_ON_MOVE = "HSC"
+    RANDOM_MUTATION = "HCC"
+    RANDOM_MOVE_DEVIATION = "HSA"
 
 class player_codons(StrEnum, metaclass=MyEnumMeta):
     OPPONENT = "HSH"

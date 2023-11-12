@@ -96,10 +96,10 @@ class Spirulateral:
         self.on_no_capture: tuple[which_piece, which_piece] = None
 
         # the debuffs that this spirulateral has
-        self.debuffs = []
+        self.debuffs = set()
 
         # the parts of the spirulateral
-        self.parts: list[Movement] = []
+        self.parts: list[Movement] = list()
 
         self.parse_spirulateral()
 
@@ -118,6 +118,7 @@ class Spirulateral:
         if codon == player_codons.OPPONENT:
             self.owner_on_current = players.OPPONENT
         elif codon in debuff_codons:
+            genome_assert(codon not in self.debuffs, f"Debuff {codon} cannot be applied twice.")
             self.debuffs.append(codon)
             self.owner_on_current = players.ME
         else:
@@ -249,6 +250,9 @@ class Spirulateral:
                 False, f"Invalid player {chessboard[current_pos]} on chessboard.")
 
         return MoveDescriptor(original_pos, current_pos, here, there)
+    
+    def get_debuffs(self):
+        return copy(self.debuffs)
 
 
 class Genome:
@@ -257,6 +261,7 @@ class Genome:
         self.dna = DnaStream(self.raw_dna)
         self.spirulaterals: list[Spirulateral] = []
         self.parse_dna()
+        self.debuffs = set()
         # TODO:uncomment - code will stop working without server running
         # self.save()
 
@@ -280,7 +285,13 @@ class Genome:
                 break
             spirulateral_dna.add_codon(self.dna.get_codon())
 
-        self.spirulaterals.append(Spirulateral(spirulateral_dna))
+        spirulateral = Spirulateral(spirulateral_dna)
+        self.spirulaterals.append(spirulateral)
+
+        debuffs = spirulateral.get_debuffs()
+        for debuff in debuffs:
+            genome_assert(debuff not in self.debuffs, f"Debuff {debuff} cannot be applied twice.")
+            self.debuffs.add(debuff)
 
     def hash(self) -> str:
         return hashlib.sha256(self.dna.get_string().encode()).hexdigest()[:6]
