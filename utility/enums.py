@@ -48,3 +48,5 @@ class GameStatus(Enum):
     LAB = auto()
     
 game_over_statuses = (GameStatus.BLACK_WON, GameStatus.WHITE_WON, GameStatus.DRAW)
+
+MOVE_IMPOSSIBLE_CODON = "HHH"

@@ -93,7 +93,7 @@ class Spirulateral:
         # which pieces will be copied into current and next tile after a move depending on what lies on the target tile
         self.on_opponent_capture: tuple[which_piece, which_piece] = None
         self.on_own_capture: tuple[which_piece, which_piece] = None
-        self.on_no_capture: tuple[which_piece] = None
+        self.on_no_capture: tuple[which_piece, which_piece] = None
 
         # the debuffs that this spirulateral has
         self.debuffs = []
@@ -150,8 +150,10 @@ class Spirulateral:
         while self.codons.has_next():
             self.parts.append(self.parse_movement())
 
-    def parse_capture_codon(self) -> tuple[which_piece, which_piece]:
+    def parse_capture_codon(self) -> tuple[which_piece, which_piece] | None:
         codon = self.codons.get_codon()
+        if codon == MOVE_IMPOSSIBLE_CODON:
+            return None
         genome_assert(codon[1] == "H",
                       "Middle character of capture codon must be H.")
         genome_assert(codon[0] in which_piece,
@@ -211,8 +213,10 @@ class Spirulateral:
 
             # maybe color the tile if the move is coloring
             if self.parts[i].coloring:
-                moves.append(self.make_move_descriptor(
-                    chessboard, current_position, position))
+                descriptor = self.make_move_descriptor(
+                    chessboard, current_position, position)
+                if descriptor is not None:
+                    moves.append(descriptor)
 
             # when we hit a piece, the spirulateral ends but only if the move is coloring
             if current_position in chessboard and self.parts[i].coloring:
@@ -226,12 +230,18 @@ class Spirulateral:
 
     def make_move_descriptor(self, chessboard, current_pos, original_pos) -> MoveDescriptor:
         if current_pos not in chessboard:
+            if self.on_no_capture is None:
+                return None
             here = (self.on_no_capture[0], self.owner_on_current)
             there = (self.on_no_capture[1], self.owner_on_next)
         elif chessboard[current_pos] == players.ME:
+            if self.on_own_capture is None:
+                return None
             here = (self.on_own_capture[0], self.owner_on_current)
             there = (self.on_own_capture[1], self.owner_on_next)
         elif chessboard[current_pos] == players.OPPONENT:
+            if self.on_opponent_capture is None:
+                return None
             here = (self.on_opponent_capture[0], self.owner_on_current)
             there = (self.on_opponent_capture[1], self.owner_on_next)
         else:
