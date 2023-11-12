@@ -173,7 +173,7 @@ class Chessboard:
             #lol
             time.sleep(5)
 
-        if debuff_codons.RANDOM_MUTATION:
+        if debuff_codons.RANDOM_MUTATION in debuffs:
             piece.mutate()
 
         # move piece
