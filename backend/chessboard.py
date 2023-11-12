@@ -80,18 +80,41 @@ class Chessboard:
         if not self.sandbox:
             assert self.get_promotion() is None, "Pawn promotion is required before making a move"
 
-        color = self.chessboard[coords].color
+        piece = self.chessboard[coords]
+        color = piece.color
         if not self.sandbox and color != self.get_current_player():
             return []
 
         # get simplified board to pass to genome
-        board = self._get_piece_owners(self.chessboard[coords].color)
-        genome = self.chessboard[coords].genome
+        board = self._get_piece_owners(piece.color)
+        genome = piece.genome
         moves = genome.get_moves(board, coords)
 
+        debuffs = genome.get_debuffs()
+
+        # apply debuffs
+        if debuff_codons.FORWARD_ONLY in debuffs:
+            if color == colors.WHITE:
+                moves = [i for i in moves if i.to_position.y >
+                         i.original_position.y]
+            else:
+                moves = [i for i in moves if i.to_position.y <
+                         i.original_position.y]
+        
+        if debuff_codons.ONLY_CAN_COLOR_DIFFERENT_COLOR in debuffs:
+            moves = [i for i in moves if i.original_position.parity() != i.to_position.parity()]
+        
+        if debuff_codons.ONLY_CAN_COLOR_SAME_COLOR in debuffs:
+            moves = [i for i in moves if i.original_position.parity() == i.to_position.parity()]
+        
+        if debuff_codons.ONLY_CAN_COLOR_NEIGHBOURS in debuffs:
+            moves = [i for i in moves if i.to_position not in self.chessboard or (abs(i.original_position.x - i.to_position.x) <= 1 and abs(i.original_position.y - i.to_position.y) <= 1)]
+
+        
         # save moves for future use
         self.current_descriptors[coords] = moves
         return moves
+    
 
     def __repr__(self):
         return "Chessboard: " + "".join([f"{i}:{self.chessboard[i]}\n" for i in self.chessboard])
@@ -140,7 +163,7 @@ class Chessboard:
         piece_from_original_pos = self.chessboard[from_pos]
         piece_from_new_pos = self.chessboard[to_pos] if to_pos in self.chessboard else None
 
-        #save original king counts
+        # save original king counts
         white_kings = self.count_kings(colors.WHITE)
         black_kings = self.count_kings(colors.BLACK)
 
@@ -198,6 +221,7 @@ class Chessboard:
         self.clock.start(self.get_current_player())
 
         return self.get_status()
+
     def _calculate_promotions(self) -> None:
         for (pos, piece) in self.chessboard.items():
             if piece.is_pawn:
@@ -227,7 +251,7 @@ class Chessboard:
         self.promotions.pop(0)
 
         self.clock.start(self.get_current_player())
-    
+
     def get_remaining_time(self, color: colors) -> float:
         return self.clock.get_time(color)
 

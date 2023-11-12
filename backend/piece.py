@@ -21,3 +21,4 @@ class Piece:
     
     def __repr__(self):
         return f"Piece(genome:{self.genome.hash()}, color:{self.color}, is pawn:{self.is_pawn}, is king:{self.is_king})"
+

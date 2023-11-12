@@ -1,3 +1,4 @@
+from utility.constants import *
 from utility.enums import *
 from utility.vector import Vector, inside_chessboard
 from backend.move_descriptor import MoveDescriptor
@@ -6,8 +7,6 @@ from utility.exceptions import InvalidGenomeException, OutOfCodons
 from copy import copy
 import hashlib
 import re
-
-
 
 
 def remove_blank(s: str) -> str:
@@ -118,8 +117,9 @@ class Spirulateral:
         if codon == player_codons.OPPONENT:
             self.owner_on_current = players.OPPONENT
         elif codon in debuff_codons:
-            genome_assert(codon not in self.debuffs, f"Debuff {codon} cannot be applied twice.")
-            self.debuffs.append(codon)
+            genome_assert(codon not in self.debuffs,
+                          f"Debuff {codon} cannot be applied twice.")
+            self.debuffs.add(codon)
             self.owner_on_current = players.ME
         else:
             genome_assert(False, f"Invalid codon {codon} in spirulateral.")
@@ -130,7 +130,7 @@ class Spirulateral:
         if codon == player_codons.OPPONENT:
             self.owner_on_next = players.OPPONENT
         elif codon in debuff_codons:
-            self.debuffs.append(codon)
+            self.debuffs.add(codon)
             self.owner_on_next = players.ME
         else:
             genome_assert(False, f"Invalid codon {codon} in spirulateral.")
@@ -173,7 +173,7 @@ class Spirulateral:
 
         return Movement(dist, coloring)
 
-    def get_moves(self, chessboard: dict[Vector, players], position: Vector) -> list[MoveDescriptor]:
+    def get_moves(self, chessboard: dict[Vector, players], position: Vector, debuffs: set[debuff_codons]) -> list[MoveDescriptor]:
 
         # in one direction of rotation
         ans: [MoveDescriptor] = []
@@ -187,8 +187,9 @@ class Spirulateral:
             moves = self.generate_moves_in_direction(
                 chessboard, position, starting_direction, -1)
             ans.extend(moves)
+
         return ans
- 
+
     def generate_moves_in_direction(self, chessboard: dict[Vector, players], position: Vector, direction: int, delta: int) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
 
@@ -204,6 +205,10 @@ class Spirulateral:
                 self.parts[i].distance
 
             # make sure not to go out of bounds
+
+            if debuff_codons.NO_TELEPORTING_BETWEEN_SIDES not in self.debuffs:
+                current_position.x %= BOARD_X
+
             if not inside_chessboard(current_position):
                 break
 
@@ -227,6 +232,9 @@ class Spirulateral:
             i = (i+1) % len(self.parts)
             # direction goes to the next/previous in rotation depending on delta
             direction = (direction+delta) % 4
+
+            if debuff_codons.SPIRULATERAL_ONLY_REPEATS_ONCE in self.debuffs and i == 0:
+                break
         return moves
 
     def make_move_descriptor(self, chessboard, current_pos, original_pos) -> MoveDescriptor:
@@ -250,20 +258,19 @@ class Spirulateral:
                 False, f"Invalid player {chessboard[current_pos]} on chessboard.")
 
         return MoveDescriptor(original_pos, current_pos, here, there)
-    
+
     def get_debuffs(self):
         return copy(self.debuffs)
 
 
 class Genome:
     def __init__(self, dna: str):
-        self.raw_dna : str = remove_blank(dna)
+        self.raw_dna: str = remove_blank(dna)
         self.dna = DnaStream(self.raw_dna)
         self.spirulaterals: list[Spirulateral] = []
-        self.parse_dna()
         self.debuffs = set()
-        # TODO:uncomment - code will stop working without server running
-        # self.save()
+        self.parse_dna()
+        self.save()
 
     def parse_dna(self) -> None:
         while self.dna.has_next():
@@ -290,7 +297,8 @@ class Genome:
 
         debuffs = spirulateral.get_debuffs()
         for debuff in debuffs:
-            genome_assert(debuff not in self.debuffs, f"Debuff {debuff} cannot be applied twice.")
+            genome_assert(debuff not in self.debuffs,
+                          f"Debuff {debuff} cannot be applied twice.")
             self.debuffs.add(debuff)
 
     def hash(self) -> str:
@@ -299,7 +307,8 @@ class Genome:
     def get_moves(self, chessboard: dict[Vector, players], position: Vector) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
         for spirulateral in self.spirulaterals:
-            moves.extend(spirulateral.get_moves(chessboard, position))
+            moves.extend(spirulateral.get_moves(
+                chessboard, position, self.debuffs))
 
         # deduplicate moves
 
@@ -314,13 +323,16 @@ class Genome:
             ans.append(move)
 
         return ans
-    
+
     @classmethod
     def from_hash(cls, hash: str):
         return cls(fetch_genome(hash))
-        
+
     def save(self):
         upload_genome(self.hash(), self.dna.get_string())
+
+    def get_debuffs(self):
+        return copy(self.debuffs)
 
 
 # TESTING

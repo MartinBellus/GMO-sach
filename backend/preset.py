@@ -16,6 +16,7 @@ class Preset:
         for i in self.hashes:
             self.genomes.append(Genome.from_hash(i))
         self.string = "-".join(self.hashes)
+        self.save()
         
     
     def hash(self):
