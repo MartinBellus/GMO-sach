@@ -166,7 +166,7 @@ class Spirulateral:
 
         coloring = codon[0] == "S"
 
-        dist = ternary_to_int(codon[1:]) % 5
+        dist = ternary_to_int(codon[1:]) % (3 if coloring else 5)
 
         return Movement(dist, coloring)
 
