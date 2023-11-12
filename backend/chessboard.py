@@ -140,6 +140,10 @@ class Chessboard:
         piece_from_original_pos = self.chessboard[from_pos]
         piece_from_new_pos = self.chessboard[to_pos] if to_pos in self.chessboard else None
 
+        #save original king counts
+        white_kings = self.count_kings(colors.WHITE)
+        black_kings = self.count_kings(colors.BLACK)
+
         # firstly, erase them
         if from_pos in self.chessboard:
             self.chessboard.pop(from_pos)
@@ -175,6 +179,13 @@ class Chessboard:
                 color if descriptor.original_square_new_state[1] == players.ME else other_color)
 
         self.turn_number += 1
+
+        # if the number of kings decreases, the player loses
+        if not self.sandbox:
+            if self.count_kings(colors.WHITE) < white_kings:
+                self.game_status = GameStatus.BLACK_WON
+            elif self.count_kings(colors.BLACK) < black_kings:
+                self.game_status = GameStatus.WHITE_WON
 
         # board state has changed, descriptors are invalidated
         self.current_descriptors.clear()
