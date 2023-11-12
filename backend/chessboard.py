@@ -2,11 +2,12 @@ from utility.enums import *
 from backend.move_descriptor import MoveDescriptor
 from backend.genome import Genome
 from backend.piece import Piece
-from utility.vector import Vector
+from utility.vector import Vector, inside_chessboard
 from utility.constants import *
 from backend.preset import Preset
 from collections import namedtuple
 from backend.chessclock import ChessClock
+import random, time
 
 PieceInfo = namedtuple(
     "PieceInfo", ["genome_hash", "color", "is_pawn", "is_king"])
@@ -90,7 +91,7 @@ class Chessboard:
         genome = piece.genome
         moves = genome.get_moves(board, coords)
 
-        debuffs = genome.get_debuffs()
+        debuffs = piece.get_debuffs()
 
         # apply debuffs
         if debuff_codons.FORWARD_ONLY in debuffs:
@@ -153,11 +154,27 @@ class Chessboard:
         assert descriptor.original_position in self.current_descriptors, "Invalid move descriptor"
         assert descriptor in self.current_descriptors[descriptor.original_position], "Invalid move descriptor"
 
-        # TODO: figure out what to do with the king status, since it can be split, stolen, etc.
-        # current status: it just gets copied - ofc unusable because if a move makes it disappear(its not captured but just disappears) player is still in the game
-
         from_pos = descriptor.original_position
         to_pos = descriptor.to_position
+
+        piece = self.chessboard[from_pos]
+
+        # check if the move has deviation
+        # TODO constants
+        debuffs = piece.get_debuffs()
+        if debuff_codons.RANDOM_MOVE_DEVIATION in debuffs:
+            new_to_pos = Vector(to_pos.x + random.randint(-1, 1),
+                                to_pos.y + random.randint(-1, 1))
+            if inside_chessboard(new_to_pos):
+                #fuck it, otherwise it stays the same
+                to_pos = new_to_pos
+        
+        if debuff_codons.GAME_FREEZES_ON_MOVE in debuffs:
+            #lol
+            time.sleep(5)
+
+        if debuff_codons.RANDOM_MUTATION:
+            piece.mutate()
 
         # move piece
         piece_from_original_pos = self.chessboard[from_pos]

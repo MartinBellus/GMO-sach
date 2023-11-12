@@ -7,6 +7,7 @@ from utility.exceptions import InvalidGenomeException, OutOfCodons
 from copy import copy
 import hashlib
 import re
+import random
 
 
 def remove_blank(s: str) -> str:
@@ -166,6 +167,9 @@ class Spirulateral:
 
     def parse_movement(self):
         codon = self.codons.get_codon()
+
+        genome_assert(all(c in "SAC" for c in codon),
+                      "Codon must only contain S, A, C.")
 
         coloring = codon[0] == "S"
 
@@ -333,6 +337,22 @@ class Genome:
 
     def get_debuffs(self):
         return copy(self.debuffs)
+
+    def mutate(self):
+        ATTEMPTS = 20
+        EDITS = 1
+
+        for _ in range(ATTEMPTS):
+            new_dna = self.dna.get_string()
+            for _ in range(EDITS):
+                index = random.randint(0, len(new_dna)-1)
+                new_dna = new_dna[:index] + \
+                    random.choice([i for i in "SACH" if i!=new_dna[index]]) + new_dna[index+1:]
+            try:
+                return Genome(new_dna)
+            except InvalidGenomeException:
+                pass
+        return self
 
 
 # TESTING
