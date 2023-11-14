@@ -13,7 +13,7 @@ def nic():
 
 if __name__ == "__main__":
     root = tkinter.Tk()
-    cnt = Chessboard(0)
+    cnt = Chessboard(1)
     ui = ChessboardUI(root,cnt,width=WIDTH,height=HEIGHT,bg="yellow")
     editor = EditorUI(root,ui,width=100,height=HEIGHT,bg="green")
     clock = ChessClockUI(root,cnt,height=HEIGHT,width= 100)

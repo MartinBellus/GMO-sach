@@ -1,10 +1,13 @@
 import os
-import random
 from PIL import Image,ImageTk
 from utility.enums import colors
 from utility.constants import *
 
-def adjust(px : tuple,const : float = 1):
+def adjust(px : tuple,color : colors):
+    if color == colors.WHITE:
+        const = 0.5
+    else:
+        const = 1.5
     return (int(px[0]*const),int(px[1]*const),int(px[2]*const),px[3])
 
 class ImageSelector:
@@ -18,14 +21,11 @@ class ImageSelector:
                 print(ex)
 
     def get_image(self,hash : str,color : colors) -> ImageTk.PhotoImage:
-        random.seed(hash)
-        img = self.images[random.randrange(len(self.images))]
+        int_hash = int(hash,16)
+        img = self.images[int_hash%len(self.images)]
         new_image_raw : list[tuple]= []
         for px in img.getdata():
-            if color == colors.BLACK:
-                new_image_raw.append(adjust(px,0.5))
-            else:
-                new_image_raw.append(adjust(px,1.5))
+            new_image_raw.append(adjust(px,color))
         ret_img = Image.new(img.mode,img.size)
         ret_img.putdata(new_image_raw)
         return ImageTk.PhotoImage(ret_img)
