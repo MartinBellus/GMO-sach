@@ -1,3 +1,4 @@
+from utility.constants import *
 from utility.enums import *
 from utility.vector import Vector, inside_chessboard
 from backend.move_descriptor import MoveDescriptor
@@ -6,8 +7,7 @@ from utility.exceptions import InvalidGenomeException, OutOfCodons
 from copy import copy
 import hashlib
 import re
-
-
+import random
 
 
 def remove_blank(s: str) -> str:
@@ -93,13 +93,13 @@ class Spirulateral:
         # which pieces will be copied into current and next tile after a move depending on what lies on the target tile
         self.on_opponent_capture: tuple[which_piece, which_piece] = None
         self.on_own_capture: tuple[which_piece, which_piece] = None
-        self.on_no_capture: tuple[which_piece] = None
+        self.on_no_capture: tuple[which_piece, which_piece] = None
 
         # the debuffs that this spirulateral has
-        self.debuffs = []
+        self.debuffs = set()
 
         # the parts of the spirulateral
-        self.parts: list[Movement] = []
+        self.parts: list[Movement] = list()
 
         self.parse_spirulateral()
 
@@ -118,7 +118,9 @@ class Spirulateral:
         if codon == player_codons.OPPONENT:
             self.owner_on_current = players.OPPONENT
         elif codon in debuff_codons:
-            self.debuffs.append(codon)
+            genome_assert(codon not in self.debuffs,
+                          f"Debuff {codon} cannot be applied twice.")
+            self.debuffs.add(codon)
             self.owner_on_current = players.ME
         else:
             genome_assert(False, f"Invalid codon {codon} in spirulateral.")
@@ -129,7 +131,7 @@ class Spirulateral:
         if codon == player_codons.OPPONENT:
             self.owner_on_next = players.OPPONENT
         elif codon in debuff_codons:
-            self.debuffs.append(codon)
+            self.debuffs.add(codon)
             self.owner_on_next = players.ME
         else:
             genome_assert(False, f"Invalid codon {codon} in spirulateral.")
@@ -150,8 +152,10 @@ class Spirulateral:
         while self.codons.has_next():
             self.parts.append(self.parse_movement())
 
-    def parse_capture_codon(self) -> tuple[which_piece, which_piece]:
+    def parse_capture_codon(self) -> tuple[which_piece, which_piece] | None:
         codon = self.codons.get_codon()
+        if codon == MOVE_IMPOSSIBLE_CODON:
+            return None
         genome_assert(codon[1] == "H",
                       "Middle character of capture codon must be H.")
         genome_assert(codon[0] in which_piece,
@@ -164,13 +168,16 @@ class Spirulateral:
     def parse_movement(self):
         codon = self.codons.get_codon()
 
+        genome_assert(all(c in "SAC" for c in codon),
+                      "Codon must only contain S, A, C.")
+
         coloring = codon[0] == "S"
 
-        dist = ternary_to_int(codon[1:]) % 5
+        dist = ternary_to_int(codon[1:]) % (3 if coloring else 5)
 
         return Movement(dist, coloring)
 
-    def get_moves(self, chessboard: dict[Vector, players], position: Vector) -> list[MoveDescriptor]:
+    def get_moves(self, chessboard: dict[Vector, players], position: Vector, debuffs: set[debuff_codons]) -> list[MoveDescriptor]:
 
         # in one direction of rotation
         ans: [MoveDescriptor] = []
@@ -184,8 +191,9 @@ class Spirulateral:
             moves = self.generate_moves_in_direction(
                 chessboard, position, starting_direction, -1)
             ans.extend(moves)
+
         return ans
- 
+
     def generate_moves_in_direction(self, chessboard: dict[Vector, players], position: Vector, direction: int, delta: int) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
 
@@ -201,6 +209,10 @@ class Spirulateral:
                 self.parts[i].distance
 
             # make sure not to go out of bounds
+
+            if debuff_codons.NO_TELEPORTING_BETWEEN_SIDES not in self.debuffs:
+                current_position.x %= BOARD_X
+
             if not inside_chessboard(current_position):
                 break
 
@@ -211,8 +223,10 @@ class Spirulateral:
 
             # maybe color the tile if the move is coloring
             if self.parts[i].coloring:
-                moves.append(self.make_move_descriptor(
-                    chessboard, current_position, position))
+                descriptor = self.make_move_descriptor(
+                    chessboard, current_position, position)
+                if descriptor is not None:
+                    moves.append(descriptor)
 
             # when we hit a piece, the spirulateral ends but only if the move is coloring
             if current_position in chessboard and self.parts[i].coloring:
@@ -222,16 +236,25 @@ class Spirulateral:
             i = (i+1) % len(self.parts)
             # direction goes to the next/previous in rotation depending on delta
             direction = (direction+delta) % 4
+
+            if debuff_codons.SPIRULATERAL_ONLY_REPEATS_ONCE in self.debuffs and i == 0:
+                break
         return moves
 
     def make_move_descriptor(self, chessboard, current_pos, original_pos) -> MoveDescriptor:
         if current_pos not in chessboard:
+            if self.on_no_capture is None:
+                return None
             here = (self.on_no_capture[0], self.owner_on_current)
             there = (self.on_no_capture[1], self.owner_on_next)
         elif chessboard[current_pos] == players.ME:
+            if self.on_own_capture is None:
+                return None
             here = (self.on_own_capture[0], self.owner_on_current)
             there = (self.on_own_capture[1], self.owner_on_next)
         elif chessboard[current_pos] == players.OPPONENT:
+            if self.on_opponent_capture is None:
+                return None
             here = (self.on_opponent_capture[0], self.owner_on_current)
             there = (self.on_opponent_capture[1], self.owner_on_next)
         else:
@@ -240,15 +263,18 @@ class Spirulateral:
 
         return MoveDescriptor(original_pos, current_pos, here, there)
 
+    def get_debuffs(self):
+        return copy(self.debuffs)
+
 
 class Genome:
     def __init__(self, dna: str):
-        self.raw_dna : str = remove_blank(dna)
+        self.raw_dna: str = remove_blank(dna)
         self.dna = DnaStream(self.raw_dna)
         self.spirulaterals: list[Spirulateral] = []
+        self.debuffs = set()
         self.parse_dna()
-        # TODO:uncomment - code will stop working without server running
-        # self.save()
+        self.save()
 
     def parse_dna(self) -> None:
         while self.dna.has_next():
@@ -270,7 +296,14 @@ class Genome:
                 break
             spirulateral_dna.add_codon(self.dna.get_codon())
 
-        self.spirulaterals.append(Spirulateral(spirulateral_dna))
+        spirulateral = Spirulateral(spirulateral_dna)
+        self.spirulaterals.append(spirulateral)
+
+        debuffs = spirulateral.get_debuffs()
+        for debuff in debuffs:
+            genome_assert(debuff not in self.debuffs,
+                          f"Debuff {debuff} cannot be applied twice.")
+            self.debuffs.add(debuff)
 
     def hash(self) -> str:
         return hashlib.sha256(self.dna.get_string().encode()).hexdigest()[:6]
@@ -278,7 +311,8 @@ class Genome:
     def get_moves(self, chessboard: dict[Vector, players], position: Vector) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
         for spirulateral in self.spirulaterals:
-            moves.extend(spirulateral.get_moves(chessboard, position))
+            moves.extend(spirulateral.get_moves(
+                chessboard, position, self.debuffs))
 
         # deduplicate moves
 
@@ -293,13 +327,32 @@ class Genome:
             ans.append(move)
 
         return ans
-    
+
     @classmethod
     def from_hash(cls, hash: str):
         return cls(fetch_genome(hash))
-        
+
     def save(self):
         upload_genome(self.hash(), self.dna.get_string())
+
+    def get_debuffs(self):
+        return copy(self.debuffs)
+
+    def mutate(self):
+        ATTEMPTS = 20
+        EDITS = 1
+
+        for _ in range(ATTEMPTS):
+            new_dna = self.dna.get_string()
+            for _ in range(EDITS):
+                index = random.randint(0, len(new_dna)-1)
+                new_dna = new_dna[:index] + \
+                    random.choice([i for i in "SACH" if i!=new_dna[index]]) + new_dna[index+1:]
+            try:
+                return Genome(new_dna)
+            except InvalidGenomeException:
+                pass
+        return self
 
 
 # TESTING

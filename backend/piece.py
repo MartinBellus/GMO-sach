@@ -21,3 +21,10 @@ class Piece:
     
     def __repr__(self):
         return f"Piece(genome:{self.genome.hash()}, color:{self.color}, is pawn:{self.is_pawn}, is king:{self.is_king})"
+    
+    def get_debuffs(self):
+        return self.genome.get_debuffs()
+    
+    def mutate(self):
+        self.genome = self.genome.mutate()
+

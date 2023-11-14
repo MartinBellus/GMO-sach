@@ -2,11 +2,12 @@ from utility.enums import *
 from backend.move_descriptor import MoveDescriptor
 from backend.genome import Genome
 from backend.piece import Piece
-from utility.vector import Vector
+from utility.vector import Vector, inside_chessboard
 from utility.constants import *
 from backend.preset import Preset
 from collections import namedtuple
 from backend.chessclock import ChessClock
+import random, time
 
 PieceInfo = namedtuple(
     "PieceInfo", ["genome_hash", "color", "is_pawn", "is_king"])
@@ -80,18 +81,41 @@ class Chessboard:
         if not self.sandbox:
             assert self.get_promotion() is None, "Pawn promotion is required before making a move"
 
-        color = self.chessboard[coords].color
+        piece = self.chessboard[coords]
+        color = piece.color
         if not self.sandbox and color != self.get_current_player():
             return []
 
         # get simplified board to pass to genome
-        board = self._get_piece_owners(self.chessboard[coords].color)
-        genome = self.chessboard[coords].genome
+        board = self._get_piece_owners(piece.color)
+        genome = piece.genome
         moves = genome.get_moves(board, coords)
 
+        debuffs = piece.get_debuffs()
+
+        # apply debuffs
+        if debuff_codons.FORWARD_ONLY in debuffs:
+            if color == colors.WHITE:
+                moves = [i for i in moves if i.to_position.y >
+                         i.original_position.y]
+            else:
+                moves = [i for i in moves if i.to_position.y <
+                         i.original_position.y]
+        
+        if debuff_codons.ONLY_CAN_COLOR_DIFFERENT_COLOR in debuffs:
+            moves = [i for i in moves if i.original_position.parity() != i.to_position.parity()]
+        
+        if debuff_codons.ONLY_CAN_COLOR_SAME_COLOR in debuffs:
+            moves = [i for i in moves if i.original_position.parity() == i.to_position.parity()]
+        
+        if debuff_codons.ONLY_CAN_COLOR_NEIGHBOURS in debuffs:
+            moves = [i for i in moves if i.to_position not in self.chessboard or (abs(i.original_position.x - i.to_position.x) <= 1 and abs(i.original_position.y - i.to_position.y) <= 1)]
+
+        
         # save moves for future use
         self.current_descriptors[coords] = moves
         return moves
+    
 
     def __repr__(self):
         return "Chessboard: " + "".join([f"{i}:{self.chessboard[i]}\n" for i in self.chessboard])
@@ -130,15 +154,35 @@ class Chessboard:
         assert descriptor.original_position in self.current_descriptors, "Invalid move descriptor"
         assert descriptor in self.current_descriptors[descriptor.original_position], "Invalid move descriptor"
 
-        # TODO: figure out what to do with the king status, since it can be split, stolen, etc.
-        # current status: it just gets copied - ofc unusable because if a move makes it disappear(its not captured but just disappears) player is still in the game
-
         from_pos = descriptor.original_position
         to_pos = descriptor.to_position
+
+        piece = self.chessboard[from_pos]
+
+        # check if the move has deviation
+        # TODO constants
+        debuffs = piece.get_debuffs()
+        if debuff_codons.RANDOM_MOVE_DEVIATION in debuffs:
+            new_to_pos = Vector(to_pos.x + random.randint(-1, 1),
+                                to_pos.y + random.randint(-1, 1))
+            if inside_chessboard(new_to_pos):
+                #fuck it, otherwise it stays the same
+                to_pos = new_to_pos
+        
+        if debuff_codons.GAME_FREEZES_ON_MOVE in debuffs:
+            #lol
+            time.sleep(5)
+
+        if debuff_codons.RANDOM_MUTATION in debuffs:
+            piece.mutate()
 
         # move piece
         piece_from_original_pos = self.chessboard[from_pos]
         piece_from_new_pos = self.chessboard[to_pos] if to_pos in self.chessboard else None
+
+        # save original king counts
+        white_kings = self.count_kings(colors.WHITE)
+        black_kings = self.count_kings(colors.BLACK)
 
         # firstly, erase them
         if from_pos in self.chessboard:
@@ -176,6 +220,13 @@ class Chessboard:
 
         self.turn_number += 1
 
+        # if the number of kings decreases, the player loses
+        if not self.sandbox:
+            if self.count_kings(colors.WHITE) < white_kings:
+                self.game_status = GameStatus.BLACK_WON
+            elif self.count_kings(colors.BLACK) < black_kings:
+                self.game_status = GameStatus.WHITE_WON
+
         # board state has changed, descriptors are invalidated
         self.current_descriptors.clear()
 
@@ -187,6 +238,7 @@ class Chessboard:
         self.clock.start(self.get_current_player())
 
         return self.get_status()
+
     def _calculate_promotions(self) -> None:
         for (pos, piece) in self.chessboard.items():
             if piece.is_pawn:
@@ -216,7 +268,7 @@ class Chessboard:
         self.promotions.pop(0)
 
         self.clock.start(self.get_current_player())
-    
+
     def get_remaining_time(self, color: colors) -> float:
         return self.clock.get_time(color)
 
