@@ -21,7 +21,7 @@ class ImageSelector:
                 print(ex)
 
     def get_image(self,hash : str,color : colors) -> ImageTk.PhotoImage:
-        int_hash = int(hash,16)
+        int_hash = int(hash,36)
         img = self.images[int_hash%len(self.images)]
         new_image_raw : list[tuple]= []
         for px in img.getdata():

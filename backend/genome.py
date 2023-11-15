@@ -306,7 +306,13 @@ class Genome:
             self.debuffs.add(debuff)
 
     def hash(self) -> str:
-        return hashlib.sha256(self.dna.get_string().encode()).hexdigest()[:6]
+        ALPHABET="0123456789abcdefghijklmnopqrstuvwxyz"
+        hsh=hashlib.sha256(self.dna.get_string().encode()).digest()[:6]
+        res=""
+        for i in hsh:
+            res+=ALPHABET[i%len(ALPHABET)]
+        return res
+
 
     def get_moves(self, chessboard: dict[Vector, players], position: Vector) -> list[MoveDescriptor]:
         moves: [MoveDescriptor] = []
