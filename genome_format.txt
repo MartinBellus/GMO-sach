@@ -33,6 +33,17 @@ ničja - CHA
 ničiný - CHS
 ničnič - CHC
 
+Debuffy
+HAS - spirulateral sa vykoná len dopredu
+HAC - spirulateral sa vykoná len raz
+HAA - nevieš sa teleportovať medzi bočnými hranami
+HCA - ofarbiť vieš len políčko opačnej farby, na akej stojíš
+HCS - ofarbiť vieš len políčko rovnakej farby, na akej stojíš
+HSS - ofarbiť políčko s figúrkou vieš len ak s tebou susedí
+HSC - keď touto figúrkou hýbeš, hra zamrzne na 5s
+HCC - figúrke po pohybe náhodne zmutuje genóm
+HSA - figúrka sa pohne na náhodné políčko susediace s tým, kam chce ísť
+
 Spirulaterál:
 Postupnosť čísel -4 až 4 - 9 možností, neobsahujú H
 Prvé písmeno: znamienko

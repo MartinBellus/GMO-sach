@@ -147,7 +147,7 @@ class ChessboardUI(tkinter.Canvas):
                 if state[invert(r)][c] != None:
                     # nakresli na dane policko figurku
                     # TODO image selector
-                    img = self.selector.get_image(state[invert(r)][c].genome_hash,state[invert(r)][c].color)
+                    img = self.selector.get_image(state[invert(r)][c])
                     self.images.append(img)
                     super().create_image(PADDING + (c + 0.5)*self.size_x,PADDING + (r + 0.5)*self.size_y,image=img,tag = "piece")
 

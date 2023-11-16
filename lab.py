@@ -4,6 +4,7 @@ from frontend.popups import InputPopup,TextPopup
 from frontend.menu import Menu
 from backend.chessboard import Chessboard
 from backend.genome import Genome
+from backend.preset import Preset
 from utility.constants import *
 from utility.enums import colors
 import tkinter
@@ -18,6 +19,24 @@ def white_preset():
 
 def black_preset():
     InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x: ui.place_preset(x,colors.BLACK))
+
+def save_preset():
+    board = controller.get_board_for_reading()
+    hashes_top : list[str] = []
+    hashes_bot : list[str] = []
+    for i in range(BOARD_X):
+        if board[-1][i] != None:
+            hashes_top.append(board[-1][i].genome_hash)
+        if board[0][i] != None:
+            hashes_bot.append(board[0][i].genome_hash)
+    if len(hashes_top) == BOARD_X:
+        preset_top : Preset = Preset(hashes_top)
+        TextPopup("Black Preset Key",f"Black preset pieces: {hashes_top}",f"Black preset key: {preset_top.hash()}")
+    if len(hashes_bot) == BOARD_X:
+        preset_bot : Preset = Preset(hashes_bot)
+        TextPopup("White Preset Key",f"White preset pieces: {hashes_bot}",f"White preset key: {preset_bot.hash()}")
+    if len(hashes_bot) != BOARD_X and len(hashes_top) != BOARD_X:
+        TextPopup("Error",f"Place {BOARD_X} pieces in bottom or top row.")
 
 def save_as():
     InputPopup("Save piece as","Path to file, where you want to save piece",lambda x:editor.save_to(x))
@@ -37,6 +56,7 @@ if __name__ == "__main__":
         ("Place White Preset",white_preset),
         ("Place Black Preset",black_preset),
         ("Save Piece",save_as),
+        ("Save Preset",save_preset),
         ("Fetch Piece",fetch),
         ("Help",help),
     ]
