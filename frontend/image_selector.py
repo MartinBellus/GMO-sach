@@ -13,12 +13,19 @@ def adjust(px : tuple,color : colors):
 
 class ImageSelector:
     images : list[Image.Image] = []
-    special : dict[Image.Image] = []
+    special : dict[Image.Image] = {}
     def __init__(self,width : int = 50,height : int = 50):
         # load all images
         for file in os.listdir(IMAGE_DIR):
             try:
                 self.images.append(Image.open(IMAGE_DIR + file).resize((width,height)))
+            except Exception as ex:
+                print(ex)
+
+        for file in os.listdir(IMAGE_DIR + "special/"):
+            try:
+                self.special[file[:-4]] = Image.open(IMAGE_DIR + "special/" + file).resize((width,height))
+                print(file[:-4])
             except Exception as ex:
                 print(ex)
 
@@ -30,4 +37,6 @@ class ImageSelector:
             new_image_raw.append(adjust(px,piece.color))
         ret_img = Image.new(img.mode,img.size)
         ret_img.putdata(new_image_raw)
+        if piece.is_king:
+            ret_img.paste(self.special["king"],(0,0),self.special["king"])
         return ImageTk.PhotoImage(ret_img)

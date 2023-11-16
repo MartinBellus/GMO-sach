@@ -64,6 +64,7 @@ class ChessboardUI(tkinter.Canvas):
             case GameStatus.NOT_STARTED:
                 # load preset alebo nahadzat figurky
                 super().create_text(self.width/2,PADDING/2,text="Please select piece presets.",anchor="center",justify="center",tag="text")
+                self.bind("<Button-1>",self.set_king_click)
             case GameStatus.START_GAME:
                 # zacne hru
                 self.controller.start_game()
@@ -79,15 +80,15 @@ class ChessboardUI(tkinter.Canvas):
             case GameStatus.WHITE_WON:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! WHITE WON !!!",anchor="center",justify="center",tag="text")
-                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.PRE_GAME))
+                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.NOT_STARTED))
             case GameStatus.BLACK_WON:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! BLACK WON !!!",anchor="center",justify="center",tag="text")
-                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.PRE_GAME))
+                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.NOT_STARTED))
             case GameStatus.DRAW:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="DRAW",anchor="center",justify="center",tag="text")
-                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.PRE_GAME))
+                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.NOT_STARTED))
             case GameStatus.LAB:
                 super().create_text(self.width/2,PADDING/2,text="Welcome to LAB",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.ingame_click)
@@ -120,6 +121,16 @@ class ChessboardUI(tkinter.Canvas):
                 print("nikam sa nehybem, novy selected")
                 self.selected = click
             self.draw_moves(self.controller.get_moves(click))
+    
+    def set_king_click(self,event : tkinter.Event):
+        click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
+        if not inside_chessboard(click):
+            return
+        try:
+            self.controller.set_king(click)
+        except:
+            pass
+        self.redraw_pieces()
 
     def get_dna(self,event : tkinter.Event):
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
@@ -157,12 +168,12 @@ class ChessboardUI(tkinter.Canvas):
             super().itemconfig(self.squares[where.y][where.x],fill=Color.DEFAULT[where.parity()])
 
     def place_piece(self, dna : str,color : colors, x : int, y : int):
-        self.controller.insert_piece_by_dna(dna,color,Vector(x,y),False,True)
+        self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
         self.redraw_pieces()
 
     def place_piece_hash(self,hash : str, color: colors, x : int, y : int):
         try:
-            self.controller.insert_piece(hash,color,Vector(x,y),False,True)
+            self.controller.insert_piece(hash,color,Vector(x,y))
         except Exception as ex:
             raise ex
         self.redraw_pieces()
