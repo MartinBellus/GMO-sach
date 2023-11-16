@@ -22,14 +22,8 @@ class ImageSelector:
             except Exception as ex:
                 print(ex)
 
-        for file in os.listdor(IMAGE_DIR + "special/"):
-            try:
-                self.special[file] = Image.open(IMAGE_DIR + "special/" + file).resize((width,height))
-            except Exception as ex:
-                print(ex)
-
     def get_image(self,piece : PieceInfo) -> ImageTk.PhotoImage:
-        int_hash = int(piece.genome_hash,16)
+        int_hash = int(piece.genome_hash,36)
         img = self.images[int_hash%len(self.images)]
         new_image_raw : list[tuple]= []
         for px in img.getdata():
