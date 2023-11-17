@@ -7,7 +7,8 @@ from utility.constants import *
 from backend.preset import Preset
 from collections import namedtuple
 from backend.chessclock import ChessClock
-import random, time
+import random
+import time
 
 PieceInfo = namedtuple(
     "PieceInfo", ["genome_hash", "color", "is_pawn", "is_king"])
@@ -19,10 +20,20 @@ class Chessboard:
         self.current_descriptors: dict[Vector, MoveDescriptor] = dict()
         self.need_to_promote: bool = False
         self.game_status: GameStatus = GameStatus.NOT_STARTED
+        self.sandbox = sandbox
+        if sandbox:
+            self.game_status = GameStatus.LAB
         self.promotions: list[Vector] = list()
         self.turn_number: int = 0
-        self.sandbox: bool = sandbox
         self.clock: ChessClock = ChessClock(TIME_PER_PLAYER)
+
+    def _is_sandbox(self):
+        return self.game_status == GameStatus.LAB
+
+    def _real_game_assert(self, condition: bool, message: str):
+        if self._is_sandbox():
+            return
+        assert condition, message
 
     def insert_piece(self, genome_hash: str, color: colors, position: Vector, is_pawn=False, is_king=False):
         # assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
@@ -37,14 +48,15 @@ class Chessboard:
         self._insert_piece(piece, position)
 
     def erase_piece(self, pos: Vector):
-        assert self.sandbox, "erase_piece only available in sandbox, in real games use presets"
+        self._real_game_assert(
+            False, "erase_piece only available in sandbox, in real games use presets")
         self._erase_piece(pos)
 
-    def set_king(self, position: Vector):
-        if not self.sandbox:
-            assert self.game_status == GameStatus.NOT_STARTED, "Can't set king after the game has begun."
+    def toggle_king(self, position: Vector):
+        self._real_game_assert(self.game_status == GameStatus.NOT_STARTED,
+                               "Can't set king after the game has begun.")
         if position in self.chessboard:
-            self.chessboard[position].is_king = True
+            self.chessboard[position].is_king = not self.chessboard[position].is_king
         else:
             raise IndexError
 
@@ -70,20 +82,20 @@ class Chessboard:
         if coords in self.current_descriptors:
             return self.current_descriptors[coords]
 
-        if not self.sandbox:
-            assert self.game_status == GameStatus.IN_PROGRESS, "Game state is not in_progress"
+        self._real_game_assert(
+            self.game_status == GameStatus.IN_PROGRESS, "Game state is not in_progress")
 
         # check if there is a piece at the given coords
         if coords not in self.chessboard:
             # raise Exception("No piece at given coordinates")
             return []
 
-        if not self.sandbox:
-            assert self.get_promotion() is None, "Pawn promotion is required before making a move"
+        self._real_game_assert(self.get_promotion() is None,
+                               "Pawn promotion is required before making a move")
 
         piece = self.chessboard[coords]
         color = piece.color
-        if not self.sandbox and color != self.get_current_player():
+        if not self._is_sandbox() and color != self.get_current_player():
             return []
 
         # get simplified board to pass to genome
@@ -101,21 +113,22 @@ class Chessboard:
             else:
                 moves = [i for i in moves if i.to_position.y <
                          i.original_position.y]
-        
-        if debuff_codons.ONLY_CAN_COLOR_DIFFERENT_COLOR in debuffs:
-            moves = [i for i in moves if i.original_position.parity() != i.to_position.parity()]
-        
-        if debuff_codons.ONLY_CAN_COLOR_SAME_COLOR in debuffs:
-            moves = [i for i in moves if i.original_position.parity() == i.to_position.parity()]
-        
-        if debuff_codons.ONLY_CAN_COLOR_NEIGHBOURS in debuffs:
-            moves = [i for i in moves if i.to_position not in self.chessboard or (abs(i.original_position.x - i.to_position.x) <= 1 and abs(i.original_position.y - i.to_position.y) <= 1)]
 
-        
+        if debuff_codons.ONLY_CAN_COLOR_DIFFERENT_COLOR in debuffs:
+            moves = [i for i in moves if i.original_position.parity()
+                     != i.to_position.parity()]
+
+        if debuff_codons.ONLY_CAN_COLOR_SAME_COLOR in debuffs:
+            moves = [i for i in moves if i.original_position.parity()
+                     == i.to_position.parity()]
+
+        if debuff_codons.ONLY_CAN_COLOR_NEIGHBOURS in debuffs:
+            moves = [i for i in moves if i.to_position not in self.chessboard or (abs(
+                i.original_position.x - i.to_position.x) <= 1 and abs(i.original_position.y - i.to_position.y) <= 1)]
+
         # save moves for future use
         self.current_descriptors[coords] = moves
         return moves
-    
 
     def __repr__(self):
         return "Chessboard: " + "".join([f"{i}:{self.chessboard[i]}\n" for i in self.chessboard])
@@ -128,11 +141,17 @@ class Chessboard:
         return ans
 
     def start_game(self):
-        if not self.sandbox:
-            assert self.game_status == GameStatus.NOT_STARTED, "Game has already started"
-            assert self.turn_number == 0, "Game has already started"
-            assert self.count_kings(colors.WHITE) >= 1, "White king is missing"
-            assert self.count_kings(colors.BLACK) >= 1, "Black king is missing"
+        if self._is_sandbox():
+            return
+        self._real_game_assert(
+            self.game_status == GameStatus.NOT_STARTED, "Game has already started")
+        self._real_game_assert(self.turn_number == 0,
+                               "Game has already started")
+        self._real_game_assert(self.count_kings(
+            colors.WHITE) >= 1, "White king is missing")
+        self._real_game_assert(self.count_kings(
+            colors.BLACK) >= 1, "Black king is missing")
+
         self.game_status = GameStatus.IN_PROGRESS
         self.clock.start(colors.WHITE)
 
@@ -143,13 +162,14 @@ class Chessboard:
         color = self.chessboard[descriptor.original_position].color
         other_color = colors.WHITE if color == colors.BLACK else colors.BLACK
 
-        if not self.sandbox:
-            assert color == self.get_current_player(), "Wrong player's turn"
+        self._real_game_assert(
+            color == self.get_current_player(), "Wrong player's turn")
 
-            assert self.get_promotion() is None, "Pawn promotion is required before making a move"
+        self._real_game_assert(self.get_promotion() is None,
+                               "Pawn promotion is required before making a move")
 
-            if self.get_status() != GameStatus.IN_PROGRESS:
-                return self.get_status()
+        if self.get_status() not in (GameStatus.IN_PROGRESS, GameStatus.LAB):
+            return self.get_status()
 
         assert descriptor.original_position in self.current_descriptors, "Invalid move descriptor"
         assert descriptor in self.current_descriptors[descriptor.original_position], "Invalid move descriptor"
@@ -166,11 +186,11 @@ class Chessboard:
             new_to_pos = Vector(to_pos.x + random.randint(-1, 1),
                                 to_pos.y + random.randint(-1, 1))
             if inside_chessboard(new_to_pos):
-                #fuck it, otherwise it stays the same
+                # fuck it, otherwise it stays the same
                 to_pos = new_to_pos
-        
+
         if debuff_codons.GAME_FREEZES_ON_MOVE in debuffs:
-            #lol
+            # lol
             time.sleep(5)
 
         if debuff_codons.RANDOM_MUTATION in debuffs:
@@ -220,13 +240,6 @@ class Chessboard:
 
         self.turn_number += 1
 
-        # if the number of kings decreases, the player loses
-        if not self.sandbox:
-            if self.count_kings(colors.WHITE) < white_kings:
-                self.game_status = GameStatus.BLACK_WON
-            elif self.count_kings(colors.BLACK) < black_kings:
-                self.game_status = GameStatus.WHITE_WON
-
         # board state has changed, descriptors are invalidated
         self.current_descriptors.clear()
 
@@ -237,7 +250,24 @@ class Chessboard:
         self.clock.pause()
         self.clock.start(self.get_current_player())
 
+        # if the number of kings decreases, the player loses
+        white_loses = self.count_kings(colors.WHITE) < white_kings
+        black_loses = self.count_kings(colors.BLACK) < black_kings
+
+        if white_loses and black_loses:
+            self._game_over(GameStatus.DRAW)
+        elif white_loses:
+            self._game_over(GameStatus.BLACK_WON)
+        elif black_loses:
+            self._game_over(GameStatus.WHITE_WON)
+
         return self.get_status()
+
+    def _game_over(self, status: GameStatus) -> None:
+        if self._is_sandbox():
+            return
+        self.game_status = status
+        self.clock.pause()
 
     def _calculate_promotions(self) -> None:
         for (pos, piece) in self.chessboard.items():
@@ -285,8 +315,8 @@ class Chessboard:
     def load_preset(self, preset: Preset | str, color: colors):
         if type(preset) == str:  # if we are given a preset hash, we need to fetch it
             preset = Preset.fetch_preset(preset)
-        if not self.sandbox:
-            assert self.game_status == GameStatus.NOT_STARTED, "Can't load preset after the game has begun."
+        self._real_game_assert(self.game_status == GameStatus.NOT_STARTED,
+                               "Can't load preset after the game has begun.")
 
         if color == colors.WHITE:
             row = 0
@@ -298,8 +328,8 @@ class Chessboard:
         for i in range(len(preset.genomes)):
             pos = Vector(i, row)
 
-            if not self.sandbox:
-                assert pos not in self.chessboard, "Attempt to place preset piece on an existing piece."
+            self._real_game_assert(
+                pos not in self.chessboard, "Attempt to place preset piece on an existing piece.")
 
             piece = Piece(preset.genomes[i], color)
             self._insert_piece(piece, pos)
@@ -314,8 +344,8 @@ class Chessboard:
         for i in range(BOARD_X):
             pos = Vector(i, row)
 
-            if not self.sandbox:
-                assert pos not in self.chessboard, "Attempt to place preset piece on an existing piece."
+            self._real_game_assert(
+                pos not in self.chessboard, "Attempt to place preset piece on an existing piece.")
 
             self._insert_piece(pawn.copy(), pos)
 

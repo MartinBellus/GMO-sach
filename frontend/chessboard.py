@@ -127,7 +127,7 @@ class ChessboardUI(tkinter.Canvas):
         if not inside_chessboard(click):
             return
         try:
-            self.controller.set_king(click)
+            self.controller.toggle_king(click)
         except:
             pass
         self.redraw_pieces()
