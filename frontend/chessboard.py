@@ -1,6 +1,7 @@
 import tkinter
+import time
 from PIL import Image, ImageTk
-from frontend.popups import TextPopup
+from frontend.popups import TextPopup, InputPopup
 from frontend.image_selector import ImageSelector
 from backend.chessboard import Chessboard, PieceInfo
 from backend.move_descriptor import MoveDescriptor
@@ -60,6 +61,14 @@ class ChessboardUI(tkinter.Canvas):
 
     def switch_state(self,new_state : GameStatus,*args):
         super().delete("text")
+        while self.controller.get_promotion() != None:
+            promotion = self.controller.get_promotion()
+            promotion_popup = InputPopup(f"{promotion[1]} can promote.",f"Piece of {promotion[1]} player at {promotion[0]} can promote.",self.do_promotion)
+            promotion_popup.wait_window()
+        
+        if self.controller.is_frozen():
+            time.sleep(5)
+            
         match new_state:
             case GameStatus.NOT_STARTED:
                 # load preset alebo nahadzat figurky
@@ -149,6 +158,12 @@ class ChessboardUI(tkinter.Canvas):
         gameState : GameStatus = self.controller.do_move(move)
         self.redraw_pieces()
         self.switch_state(gameState)
+
+    def do_promotion(self,genome_hash : str):
+        promotion = self.controller.get_promotion()
+        self.controller.promote(promotion[0],genome_hash)
+        self.redraw_pieces()
+        self.switch_state(self.controller.get_status())
 
     def redraw_pieces(self):
         super().delete("piece") # reset canvas
