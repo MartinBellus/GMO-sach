@@ -317,7 +317,7 @@ class Chessboard:
             if not self.sandbox:
                 assert pos not in self.chessboard, "Attempt to place preset piece on an existing piece."
 
-            self._insert_piece(pawn, pos)
+            self._insert_piece(pawn.copy(), pos)
 
     def get_board_for_reading(self) -> list[list[None | PieceInfo]]:
         res = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
