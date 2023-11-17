@@ -136,8 +136,6 @@ class Spirulateral:
         else:
             genome_assert(False, f"Invalid codon {codon} in spirulateral.")
 
-        # TODO: process debuffs
-
         # process capture codons
 
         self.on_own_capture = self.parse_capture_codon()

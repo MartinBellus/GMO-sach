@@ -26,6 +26,7 @@ class Chessboard:
         self.promotions: list[Vector] = list()
         self.turn_number: int = 0
         self.clock: ChessClock = ChessClock(TIME_PER_PLAYER)
+        self._frozen: bool = False
 
     def _is_sandbox(self):
         return self.game_status == GameStatus.LAB
@@ -190,8 +191,9 @@ class Chessboard:
                 to_pos = new_to_pos
 
         if debuff_codons.GAME_FREEZES_ON_MOVE in debuffs:
-            # lol
-            time.sleep(5)
+            self._frozen=True
+        else:
+            self._frozen=False
 
         if debuff_codons.RANDOM_MUTATION in debuffs:
             piece.mutate()
@@ -286,6 +288,8 @@ class Chessboard:
         assert self.get_promotion is not None, "No promotions available"
         assert position == self.promotions[0], "Invalid promotion position"
 
+        self._frozen=False
+
         self.clock.pause()
 
         old_piece = self.chessboard[position]
@@ -298,6 +302,9 @@ class Chessboard:
         self.promotions.pop(0)
 
         self.clock.start(self.get_current_player())
+    
+    def is_frozen(self):
+        return self._frozen
 
     def get_remaining_time(self, color: colors) -> float:
         return self.clock.get_time(color)

@@ -16,7 +16,6 @@ class Piece:
         self.genome = genome
 
     def copy(self):
-        # TODO which should really copy over?
         return Piece(self.genome, self.color, self.is_pawn, self.is_king)
     
     def __repr__(self):
