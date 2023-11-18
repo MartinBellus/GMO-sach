@@ -67,7 +67,13 @@ class ChessboardUI(tkinter.Canvas):
             promotion_popup.wait_window()
         
         if self.controller.is_frozen():
+            img = tkinter.PhotoImage(file=IMAGE_DIR + "/special/freeze.png")
+            self.images.append(img)
+            self.create_image(self.width/2,self.height/2,image=img,tag="freeze")
+            self.update_idletasks()
             time.sleep(5)
+            print("freeze")
+            self.delete("freeze")
             
         match new_state:
             case GameStatus.NOT_STARTED:
@@ -79,7 +85,6 @@ class ChessboardUI(tkinter.Canvas):
                 self.controller.start_game()
                 super().create_text(self.width/2,PADDING/2,text="Game will start soon.",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.ingame_click)
-                self.redraw_pieces()
                 self.switch_state(GameStatus.IN_PROGRESS)
             case GameStatus.IN_PROGRESS:
                 if self.controller.get_current_player() == colors.WHITE:
@@ -102,7 +107,6 @@ class ChessboardUI(tkinter.Canvas):
                 super().create_text(self.width/2,PADDING/2,text="Welcome to LAB",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.ingame_click)
                 self.bind("<Button-3>",self.get_dna)
-                self.redraw_pieces()
             case _:
                 print("neexistuje")
                 raise Exception("Game state does not exist")
@@ -156,8 +160,8 @@ class ChessboardUI(tkinter.Canvas):
     
     def do_turn(self,move : MoveDescriptor):
         gameState : GameStatus = self.controller.do_move(move)
-        self.redraw_pieces()
         self.switch_state(gameState)
+        self.redraw_pieces()
 
     def do_promotion(self,genome_hash : str):
         promotion = self.controller.get_promotion()
