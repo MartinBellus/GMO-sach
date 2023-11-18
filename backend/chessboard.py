@@ -80,7 +80,7 @@ class Chessboard:
 
     def get_moves(self, coords: Vector) -> list[MoveDescriptor]:
         # check if moves are already calculated
-        if coords in self.current_descriptors:
+        if coords in self.current_descriptors and not self._is_sandbox():
             return self.current_descriptors[coords]
 
         self._real_game_assert(
@@ -192,6 +192,8 @@ class Chessboard:
 
         if debuff_codons.GAME_FREEZES_ON_MOVE in debuffs:
             self._frozen=True
+            self.clock.add_time(color, -5)
+            self.clock.add_time(other_color, 5)
         else:
             self._frozen=False
 

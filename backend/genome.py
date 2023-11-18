@@ -173,6 +173,9 @@ class Spirulateral:
 
         dist = ternary_to_int(codon[1:]) % (3 if coloring else 5)
 
+        if codon[0]=='A':
+            dist = 0
+
         return Movement(dist, coloring)
 
     def get_moves(self, chessboard: dict[Vector, players], position: Vector, debuffs: set[debuff_codons]) -> list[MoveDescriptor]:
@@ -277,6 +280,8 @@ class Genome:
     def parse_dna(self) -> None:
         while self.dna.has_next():
             self.parse_spirulateral()
+        for i in self.spirulaterals:
+            i.debuffs = self.debuffs.copy()
 
     def parse_spirulateral(self) -> None:
         if not self.dna.has_next():

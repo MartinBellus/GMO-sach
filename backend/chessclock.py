@@ -25,3 +25,7 @@ class ChessClock:
     def get_time(self, color: colors):
         self.update_remaining_time()
         return self.remaining_time[color]
+
+    def add_time(self, color: colors, time: float):
+        self.update_remaining_time()
+        self.remaining_time[color] += time
