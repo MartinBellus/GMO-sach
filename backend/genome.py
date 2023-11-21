@@ -149,6 +149,8 @@ class Spirulateral:
 
         while self.codons.has_next():
             self.parts.append(self.parse_movement())
+        
+        genome_assert(len(self.parts) <= 4, "Spirulateral must have at most 4 parts.")
 
     def parse_capture_codon(self) -> tuple[which_piece, which_piece] | None:
         codon = self.codons.get_codon()
