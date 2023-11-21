@@ -22,7 +22,7 @@ class Vector:
         return hash((self.x, self.y))
 
     def __repr__(self):
-        return f"Vector({self.x},{self.y})"
+        return f"({self.x},{self.y})"
 
     def parity(self) -> bool:
         return (self.x + self.y)%2

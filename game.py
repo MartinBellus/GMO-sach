@@ -18,8 +18,8 @@ def black_preset():
     InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x: ui.place_preset(x,colors.BLACK))
 
 def help():
-    # TODO
-    TextPopup("Help","glupy si")
+    TextPopup("Help","PRED HROU","Pomocou Place Preset ulož preset pre daného hráča. Potom klikni ľavým tlačítkom na figúrky, ktoré chceš ozačiť za kráľa.",
+              "POČAS HRY","Cieľ hry: Súperovi vyprší čas alebo sa mu zníži počet kráľov.")
 
 if __name__ == "__main__":
     root = tkinter.Tk()
@@ -31,7 +31,6 @@ if __name__ == "__main__":
         ("Start Game",start_game),
         ("Place White Preset",white_preset),
         ("Place Black Preset",black_preset),
-        ("",lambda : 0),
         ("Help",help),
     ]
 

@@ -12,7 +12,9 @@ import tkinter
 
 def help():
     # TODO
-    TextPopup("Help","glupy si")
+    TextPopup("Help","Ľavým klikom sa pohybujú figúrky, pravým zistíš, aký má daná figúrka kód.",
+              "Napravo sa nachádza editor, v ktorom môžeš meniť genóm figúrky a vkladať ju na plochu. Pomocou Fetch Piece alebo Open Genome môžeš načítať už existujúci genóm do editora.",
+              "Pomocou Save Preset si môžeš uložiť aktuálne rozloženie figúrok pre bieleho a čierneho hráča.")
 
 def white_preset():
     InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x:ui.place_preset(x,colors.WHITE))

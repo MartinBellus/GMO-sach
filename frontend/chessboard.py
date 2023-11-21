@@ -61,25 +61,22 @@ class ChessboardUI(tkinter.Canvas):
 
     def switch_state(self,new_state : GameStatus,*args):
         super().delete("text")
-        while self.controller.get_promotion() != None:
-            promotion = self.controller.get_promotion()
-            promotion_popup = InputPopup(f"{promotion[1]} can promote.",f"Piece of {promotion[1]} player at {promotion[0]} can promote.",self.do_promotion)
-            promotion_popup.wait_window()
         
         if self.controller.is_frozen():
             img = tkinter.PhotoImage(file=IMAGE_DIR + "/special/freeze.png")
             self.images.append(img)
             self.create_image(self.width/2,self.height/2,image=img,tag="freeze")
             self.update_idletasks()
-            time.sleep(5)
             print("freeze")
+            time.sleep(5)
             self.delete("freeze")
             
         match new_state:
             case GameStatus.NOT_STARTED:
                 # load preset alebo nahadzat figurky
-                super().create_text(self.width/2,PADDING/2,text="Please select piece presets.",anchor="center",justify="center",tag="text")
+                super().create_text(self.width/2,PADDING/2,text="Please select piece presets and kings.",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.set_king_click)
+                self.redraw_pieces()
             case GameStatus.START_GAME:
                 # zacne hru
                 self.controller.start_game()
@@ -94,15 +91,15 @@ class ChessboardUI(tkinter.Canvas):
             case GameStatus.WHITE_WON:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! WHITE WON !!!",anchor="center",justify="center",tag="text")
-                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.NOT_STARTED))
+                self.unbind("<Button-1>")
             case GameStatus.BLACK_WON:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! BLACK WON !!!",anchor="center",justify="center",tag="text")
-                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.NOT_STARTED))
+                self.unbind("<Button-1>")
             case GameStatus.DRAW:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="DRAW",anchor="center",justify="center",tag="text")
-                self.bind("<Button-1>",lambda x: self.switch_state(GameStatus.NOT_STARTED))
+                self.unbind("<Button-1>")
             case GameStatus.LAB:
                 super().create_text(self.width/2,PADDING/2,text="Welcome to LAB",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.ingame_click)
@@ -111,27 +108,28 @@ class ChessboardUI(tkinter.Canvas):
                 print("neexistuje")
                 raise Exception("Game state does not exist")
 
+        while self.controller.get_promotion() != None:
+            promotion = self.controller.get_promotion()
+            # TODO lepsi text
+            promotion_popup = InputPopup(f"{str(promotion[1])[7:]} can promote.",f"Piece of {str(promotion[1])[7:]} player at {promotion[0]} can promote.",self.do_promotion)
+            promotion_popup.wait_window()
+
     def ingame_click(self,event : tkinter.Event):
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
-        print(click.x,click.y)
         if not inside_chessboard(click):
-            print("mimo")
             return
         current_descriptors : list[MoveDescriptor] = self.controller.get_moves(self.selected)
         self.clear_selected(current_descriptors)
 
         if self.selected == click: # klikol som znova na seba
-            print("klik na seba")
             self.selected = Vector(-1,-1)
         else:
             for move in current_descriptors:
                 if move.to_position == click: # viem sa pohnut
-                    print("hybem sa dakam")
                     self.do_turn(move)
                     self.selected = Vector(-1,-1)
                     return
             else: # klikol som dakam, kam neviem ist
-                print("nikam sa nehybem, novy selected")
                 self.selected = click
             self.draw_moves(self.controller.get_moves(click))
     
@@ -150,13 +148,13 @@ class ChessboardUI(tkinter.Canvas):
         if not inside_chessboard(click):
             return
         if click in self.controller.chessboard:
+            # TODO lepsi text
             TextPopup("Piece Info",repr(self.controller.chessboard[click]))
 
     def draw_moves(self,current_descriptors : list[MoveDescriptor]):
         for move in current_descriptors:
             where : Vector = move.to_position
             super().itemconfig(self.squares[where.y][where.x],fill=Color.MOVE[where.parity()])
-            print("selecting", where.x,where.y)
     
     def do_turn(self,move : MoveDescriptor):
         gameState : GameStatus = self.controller.do_move(move)
@@ -187,8 +185,11 @@ class ChessboardUI(tkinter.Canvas):
             super().itemconfig(self.squares[where.y][where.x],fill=Color.DEFAULT[where.parity()])
 
     def place_piece(self, dna : str,color : colors, x : int, y : int):
-        self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
-        self.redraw_pieces()
+        try:
+            self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
+            self.redraw_pieces()
+        except:
+            TextPopup("Error","Invalid genome.")
 
     def place_piece_hash(self,hash : str, color: colors, x : int, y : int):
         try:

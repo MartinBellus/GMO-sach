@@ -26,7 +26,7 @@ class InputPopup(tkinter.Toplevel):
             self.status.config(text="Loading...",fg="Blue")
             self.callback(self.entry.get())
             self.status.config(text="Successful",fg="Green")
-            print("fung")
+            self.after(500,self.destroy)
         except NetworkException:
             self.status.config(text="Server can not be reached",fg="Red")
         
@@ -43,4 +43,4 @@ class TextPopup(tkinter.Toplevel):
         super().resizable(False,False)
         for text in args:
             main_text = tkinter.Label(self,text=text,font=("Consolas",15),wraplength=400,justify="left",anchor="w")
-            main_text.pack(anchor="w",fill="x",expand=True,pady=20,padx=15)
+            main_text.pack(anchor="w",fill="x",expand=True,pady=10,padx=15)
