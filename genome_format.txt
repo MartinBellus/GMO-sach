@@ -55,22 +55,22 @@ A - 0
 S - 1
 C - 2
 
-Veža:
+Veža: (hash : veza)
 AHH HSH HAA CHA CHA CHA HHA SAS AAA AAA AAA
 
-Pešiak:
+Pešiak: (hash : pesiak)
 AHH HAC HAS HHH HHH CHA HHA SAS
 AHH HSH HAA HHH CHA HHH HHA CAS SAS
 
-Strelec:
+Strelec: (hash : strelec)
 AHH HCS HAA HHH CHA CHA HHA CAS SAS ASS ACS
 
-Kral:
+Kral: (hash : kral)
 AHH HAC HAA HHH CHA CHA HHA SAS SAS ACS AAC
 
-Kon:
+Kon: (hash : kon)
 AHH HAA HAC HHH CHA CHA HHA CAC SAS AAC ACA
 
-Kralovna:
+Kralovna: (hash : kralovna)
 AHH HSH HAA HHH CHA CHA HHA CAS SAS ASS ACS
 AHH HSH HSC CHA CHA CHA HHA SAS AAA AAA AAA

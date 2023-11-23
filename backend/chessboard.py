@@ -349,7 +349,7 @@ class Chessboard:
         elif color == colors.BLACK:
             row = BOARD_Y-2
 
-        pawn = Piece(Genome(PAWN_DNA), color, is_pawn=True)
+        pawn = Piece(Genome.from_hash("pesiak"), color, is_pawn=True)
         for i in range(BOARD_X):
             pos = Vector(i, row)
 
