@@ -37,10 +37,11 @@ class InputPopup(tkinter.Toplevel):
             self.status.config(text=ex,fg="Red")
 
 class TextPopup(tkinter.Toplevel):
-    def __init__(self,title : str, *args,**kwargs):
+    def __init__(self,title : str,*args,ttl : int = 5000,**kwargs):
         super().__init__(**kwargs)
         super().title(title)
         super().resizable(False,False)
         for text in args:
             main_text = tkinter.Label(self,text=text,font=("Consolas",15),wraplength=400,justify="left",anchor="w")
             main_text.pack(anchor="w",fill="x",expand=True,pady=10,padx=15)
+        self.after(ttl,self.destroy)

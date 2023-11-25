@@ -29,6 +29,7 @@ class ChessboardUI(tkinter.Canvas):
 
     squares : list[int] = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
     selected : Vector = Vector(-1,-1)
+    preview_selected : Vector = Vector(-1,-1)
     images : list[ImageTk.PhotoImage] = []
 
     def __init__(self,root : tkinter.Tk, controller : Chessboard,width = WIDTH,height = HEIGHT,**kwargs):
@@ -82,6 +83,7 @@ class ChessboardUI(tkinter.Canvas):
                 self.controller.start_game()
                 super().create_text(self.width/2,PADDING/2,text="Game will start soon.",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.ingame_click)
+                self.bind("<Button-3>",self.preview_click)
                 self.switch_state(GameStatus.IN_PROGRESS)
             case GameStatus.IN_PROGRESS:
                 if self.controller.get_current_player() == colors.WHITE:
@@ -92,14 +94,17 @@ class ChessboardUI(tkinter.Canvas):
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! WHITE WON !!!",anchor="center",justify="center",tag="text")
                 self.unbind("<Button-1>")
+                self.unbind("<Button-3>")
             case GameStatus.BLACK_WON:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! BLACK WON !!!",anchor="center",justify="center",tag="text")
                 self.unbind("<Button-1>")
+                self.unbind("<Button-3>")
             case GameStatus.DRAW:
                 print("game over")
                 super().create_text(self.width/2,PADDING/2,text="DRAW",anchor="center",justify="center",tag="text")
                 self.unbind("<Button-1>")
+                self.unbind("<Button-3>")
             case GameStatus.LAB:
                 super().create_text(self.width/2,PADDING/2,text="Welcome to LAB",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.ingame_click)
@@ -115,6 +120,8 @@ class ChessboardUI(tkinter.Canvas):
             promotion_popup.wait_window()
 
     def ingame_click(self,event : tkinter.Event):
+        self.clear_selected(self.controller.get_moves(self.preview_selected))
+        self.preview_selected = Vector(-1,-1)
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
         if not inside_chessboard(click):
             return
@@ -131,6 +138,27 @@ class ChessboardUI(tkinter.Canvas):
                     return
             else: # klikol som dakam, kam neviem ist
                 self.selected = click
+            self.draw_moves(self.controller.get_moves(click))
+
+    def preview_click(self,event : tkinter.Event):
+        self.clear_selected(self.controller.get_moves(self.selected))
+        self.selected = Vector(-1,-1)
+        click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
+        if not inside_chessboard(click):
+            return
+        current_descriptors : list[MoveDescriptor] = self.controller.get_moves(self.selected)
+        self.clear_selected(current_descriptors)
+
+        if self.preview_selected == click: # klikol som znova na seba
+            self.preview_selected = Vector(-1,-1)
+        else:
+            for move in current_descriptors:
+                if move.to_position == click: # viem sa pohnut
+                    self.do_turn(move)
+                    self.preview_selected = Vector(-1,-1)
+                    return
+            else: # klikol som dakam, kam neviem ist
+                self.preview_selected = click
             self.draw_moves(self.controller.get_moves(click))
     
     def set_king_click(self,event : tkinter.Event):
