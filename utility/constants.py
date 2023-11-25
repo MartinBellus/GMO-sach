@@ -8,7 +8,4 @@ IMAGE_DIR = "images/"
 
 TIME_PER_PLAYER = 60 * 8
 
-HTTP_URL = "http://localhost:5000/"
-
-# TODO, zatial je tu rook
-PAWN_DNA = "AHH HAA HAA AHS CHA CHA HHA SAS AAA\t AAA\n AAA"
+HTTP_URL = "http://gmo.ksp.sk:5000/"

@@ -83,9 +83,6 @@ class Chessboard:
         if coords in self.current_descriptors and not self._is_sandbox():
             return self.current_descriptors[coords]
 
-        self._real_game_assert(
-            self.game_status == GameStatus.IN_PROGRESS, "Game state is not in_progress")
-
         # check if there is a piece at the given coords
         if coords not in self.chessboard:
             # raise Exception("No piece at given coordinates")
