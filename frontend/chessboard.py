@@ -186,6 +186,8 @@ class ChessboardUI(tkinter.Canvas):
 
     def place_piece(self, dna : str,color : colors, x : int, y : int):
         try:
+            self.clear_selected(self.controller.get_moves(self.selected))
+            self.selected = Vector(-1,-1)
             self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
             self.redraw_pieces()
         except:
@@ -193,6 +195,8 @@ class ChessboardUI(tkinter.Canvas):
 
     def place_piece_hash(self,hash : str, color: colors, x : int, y : int):
         try:
+            self.clear_selected(self.controller.get_moves(self.selected))
+            self.selected = Vector(-1,-1)
             self.controller.insert_piece(hash,color,Vector(x,y))
         except Exception as ex:
             raise ex
@@ -201,6 +205,8 @@ class ChessboardUI(tkinter.Canvas):
     def place_preset(self, preset : str,color : colors):
         parsed_preset : list(str) = preset.strip().split()
         try:
+            self.clear_selected(self.controller.get_moves(self.selected))
+            self.selected = Vector(-1,-1)
             if len(parsed_preset) == 1:
                 self.controller.load_preset(Preset.fetch_preset(parsed_preset[0]),color)
             else:
