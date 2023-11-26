@@ -18,6 +18,8 @@ class ImageSelector:
         # load all images
         for file in os.listdir(IMAGE_DIR):
             try:
+                image = Image.open(IMAGE_DIR + file)
+                image.getdata()[0][3]
                 self.images.append(Image.open(IMAGE_DIR + file).resize((width,height)))
             except Exception as ex:
                 print(ex)
