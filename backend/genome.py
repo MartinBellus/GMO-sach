@@ -131,6 +131,7 @@ class Spirulateral:
         if codon == player_codons.OPPONENT:
             self.owner_on_next = players.OPPONENT
         elif codon in debuff_codons:
+            genome_assert(codon not in self.debuffs, f"Debuff {codon} cannot be applied twice.")
             self.debuffs.add(codon)
             self.owner_on_next = players.ME
         else:

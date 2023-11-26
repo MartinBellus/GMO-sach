@@ -78,7 +78,7 @@ class Chessboard:
 
         return ans
 
-    def get_moves(self, coords: Vector) -> list[MoveDescriptor]:
+    def get_moves(self, coords: Vector, allowopponent:bool = False) -> list[MoveDescriptor]:
         # check if moves are already calculated
         if coords in self.current_descriptors and not self._is_sandbox():
             return self.current_descriptors[coords]
@@ -93,7 +93,7 @@ class Chessboard:
 
         piece = self.chessboard[coords]
         color = piece.color
-        if not self._is_sandbox() and color != self.get_current_player():
+        if not self._is_sandbox() and color != self.get_current_player() and not allowopponent:
             return []
 
         # get simplified board to pass to genome
