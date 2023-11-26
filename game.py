@@ -19,7 +19,8 @@ def black_preset():
 
 def help():
     TextPopup("Help","PRED HROU","Pomocou Place Preset ulož preset pre daného hráča. Potom klikni ľavým tlačítkom na figúrky, ktoré chceš ozačiť za kráľa.",
-              "POČAS HRY","Cieľ hry: Súperovi vyprší čas alebo sa mu zníži počet kráľov.")
+              "POČAS HRY","Cieľ hry: Súperovi vyprší čas alebo sa mu zníži počet kráľov.",
+              "Ľavým klikom sa hýbe, pravým si vieš pozrieť, ako sa môže hýbať ľubovoľná figúrka.")
 
 if __name__ == "__main__":
     root = tkinter.Tk()
