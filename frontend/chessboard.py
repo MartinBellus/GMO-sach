@@ -152,7 +152,7 @@ class ChessboardUI(tkinter.Canvas):
             self.preview_selected = Vector(-1,-1)
         else:
             self.preview_selected = click
-            self.draw_moves(self.controller.get_moves(click),Color.SELECTED)
+            self.draw_moves(self.controller.get_moves(click,True),Color.SELECTED)
     
     def set_king_click(self,event : tkinter.Event):
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
