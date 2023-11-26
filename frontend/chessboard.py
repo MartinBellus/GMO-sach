@@ -15,7 +15,7 @@ from utility.enums import colors, GameStatus
 class Color:
     #           BIELE       CIERNE
     DEFAULT =   ["#eae9d2"  ,"#4b7399"]
-    SELECTED =  ["gray"     ,"gray"]
+    SELECTED =  ["#eb7b6a"  ,"#cb645e"]
     MOVE =      ["#b7d171"  ,"#87a65a"]
     ATTACK =    ["#eb7b6a"  ,"#cb645e"]
     SHOOT =     ["green"    ,"green"]
@@ -120,13 +120,13 @@ class ChessboardUI(tkinter.Canvas):
             promotion_popup.wait_window()
 
     def ingame_click(self,event : tkinter.Event):
-        self.clear_selected(self.controller.get_moves(self.preview_selected))
+        self.clear_selected()
         self.preview_selected = Vector(-1,-1)
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
         if not inside_chessboard(click):
             return
         current_descriptors : list[MoveDescriptor] = self.controller.get_moves(self.selected)
-        self.clear_selected(current_descriptors)
+        self.clear_selected()
 
         if self.selected == click: # klikol som znova na seba
             self.selected = Vector(-1,-1)
@@ -141,25 +141,18 @@ class ChessboardUI(tkinter.Canvas):
             self.draw_moves(self.controller.get_moves(click))
 
     def preview_click(self,event : tkinter.Event):
-        self.clear_selected(self.controller.get_moves(self.selected))
+        self.clear_selected()
         self.selected = Vector(-1,-1)
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
         if not inside_chessboard(click):
             return
-        current_descriptors : list[MoveDescriptor] = self.controller.get_moves(self.selected)
-        self.clear_selected(current_descriptors)
+        self.clear_selected()
 
         if self.preview_selected == click: # klikol som znova na seba
             self.preview_selected = Vector(-1,-1)
         else:
-            for move in current_descriptors:
-                if move.to_position == click: # viem sa pohnut
-                    self.do_turn(move)
-                    self.preview_selected = Vector(-1,-1)
-                    return
-            else: # klikol som dakam, kam neviem ist
-                self.preview_selected = click
-            self.draw_moves(self.controller.get_moves(click))
+            self.preview_selected = click
+            self.draw_moves(self.controller.get_moves(click),Color.SELECTED)
     
     def set_king_click(self,event : tkinter.Event):
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
@@ -179,10 +172,10 @@ class ChessboardUI(tkinter.Canvas):
             # TODO lepsi text
             TextPopup("Piece Info",repr(self.controller.chessboard[click]))
 
-    def draw_moves(self,current_descriptors : list[MoveDescriptor]):
+    def draw_moves(self,current_descriptors : list[MoveDescriptor],color : Color = Color.MOVE):
         for move in current_descriptors:
             where : Vector = move.to_position
-            super().itemconfig(self.squares[where.y][where.x],fill=Color.MOVE[where.parity()])
+            super().itemconfig(self.squares[where.y][where.x],fill=color[where.parity()])
     
     def do_turn(self,move : MoveDescriptor):
         gameState : GameStatus = self.controller.do_move(move)
@@ -207,14 +200,14 @@ class ChessboardUI(tkinter.Canvas):
                     self.images.append(img)
                     super().create_image(PADDING + (c + 0.5)*self.size_x,PADDING + (r + 0.5)*self.size_y,image=img,tag = "piece")
 
-    def clear_selected(self,current_descriptors : list[MoveDescriptor]):
-        for move in current_descriptors:
-            where : Vector = move.to_position
-            super().itemconfig(self.squares[where.y][where.x],fill=Color.DEFAULT[where.parity()])
+    def clear_selected(self):
+        for y in range(BOARD_X):
+            for x in range(BOARD_Y):
+                super().itemconfig(self.squares[y][x],fill=Color.DEFAULT[(x + y)%2])
 
     def place_piece(self, dna : str,color : colors, x : int, y : int):
         try:
-            self.clear_selected(self.controller.get_moves(self.selected))
+            self.clear_selected()
             self.selected = Vector(-1,-1)
             self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
             self.redraw_pieces()
@@ -223,7 +216,7 @@ class ChessboardUI(tkinter.Canvas):
 
     def place_piece_hash(self,hash : str, color: colors, x : int, y : int):
         try:
-            self.clear_selected(self.controller.get_moves(self.selected))
+            self.clear_selected()
             self.selected = Vector(-1,-1)
             self.controller.insert_piece(hash,color,Vector(x,y))
         except Exception as ex:
@@ -233,7 +226,7 @@ class ChessboardUI(tkinter.Canvas):
     def place_preset(self, preset : str,color : colors):
         parsed_preset : list(str) = preset.strip().split()
         try:
-            self.clear_selected(self.controller.get_moves(self.selected))
+            self.clear_selected()
             self.selected = Vector(-1,-1)
             if len(parsed_preset) == 1:
                 self.controller.load_preset(Preset.fetch_preset(parsed_preset[0]),color)
