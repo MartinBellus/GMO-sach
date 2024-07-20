@@ -1,15 +1,15 @@
 import tkinter
 import time
-from PIL import Image, ImageTk
+
+from PIL import ImageTk
+
 from frontend.popups import TextPopup, InputPopup
 from frontend.image_selector import ImageSelector
 from backend.chessboard import Chessboard, PieceInfo
 from backend.move_descriptor import MoveDescriptor
-from backend.genome import Genome
-from backend.piece import Piece
 from backend.preset import Preset
 from utility.constants import *
-from utility.vector import Vector, inside_chessboard 
+from utility.vector import Vector, inside_chessboard
 from utility.enums import colors, GameStatus
 
 class Color:
@@ -26,8 +26,18 @@ def invert(r : int) -> int:
 PADDING = 30
 
 class ChessboardUI(tkinter.Canvas):
+    """
+    Component for displaying chessboard and handling user input
 
-    squares : list[int] = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
+    Args:
+        root : parent widget
+        controller : chessboard controller
+        width : width of canvas
+        height : height of canvas
+        kwargs : keywords for tkinter.Canvas
+    """
+
+    squares : list[list[int | None]] = [[None for _ in range(BOARD_X)] for _ in range(BOARD_Y)]
     selected : Vector = Vector(-1,-1)
     preview_selected : Vector = Vector(-1,-1)
     images : list[ImageTk.PhotoImage] = []
@@ -62,7 +72,7 @@ class ChessboardUI(tkinter.Canvas):
 
     def switch_state(self,new_state : GameStatus,*args):
         super().delete("text")
-        
+
         if self.controller.is_frozen():
             img = tkinter.PhotoImage(file=IMAGE_DIR + "/special/freeze.png")
             self.images.append(img)
@@ -71,7 +81,7 @@ class ChessboardUI(tkinter.Canvas):
             print("freeze")
             time.sleep(5)
             self.delete("freeze")
-            
+
         match new_state:
             case GameStatus.NOT_STARTED:
                 # load preset alebo nahadzat figurky
@@ -115,7 +125,6 @@ class ChessboardUI(tkinter.Canvas):
 
         while self.controller.get_promotion() != None:
             promotion = self.controller.get_promotion()
-            # TODO lepsi text
             promotion_popup = InputPopup(f"{str(promotion[1])[7:]} can promote.",f"Piece of {str(promotion[1])[7:]} player at {promotion[0]} can promote.",self.do_promotion)
             promotion_popup.wait_window()
 
@@ -153,7 +162,7 @@ class ChessboardUI(tkinter.Canvas):
         else:
             self.preview_selected = click
             self.draw_moves(self.controller.get_moves(click,True),Color.SELECTED)
-    
+
     def set_king_click(self,event : tkinter.Event):
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
         if not inside_chessboard(click):
@@ -169,14 +178,13 @@ class ChessboardUI(tkinter.Canvas):
         if not inside_chessboard(click):
             return
         if click in self.controller.chessboard:
-            # TODO lepsi text
             TextPopup("Piece Info",repr(self.controller.chessboard[click]))
 
     def draw_moves(self,current_descriptors : list[MoveDescriptor],color : Color = Color.MOVE):
         for move in current_descriptors:
             where : Vector = move.to_position
             super().itemconfig(self.squares[where.y][where.x],fill=color[where.parity()])
-    
+
     def do_turn(self,move : MoveDescriptor):
         gameState : GameStatus = self.controller.do_move(move)
         self.switch_state(gameState)
@@ -195,7 +203,6 @@ class ChessboardUI(tkinter.Canvas):
             for c in range(BOARD_X):
                 if state[invert(r)][c] != None:
                     # nakresli na dane policko figurku
-                    # TODO image selector
                     img = self.selector.get_image(state[invert(r)][c])
                     self.images.append(img)
                     super().create_image(PADDING + (c + 0.5)*self.size_x,PADDING + (r + 0.5)*self.size_y,image=img,tag = "piece")
@@ -211,7 +218,8 @@ class ChessboardUI(tkinter.Canvas):
             self.selected = Vector(-1,-1)
             self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
             self.redraw_pieces()
-        except:
+        except Exception as ex:
+            print(f"Error when placing piece: {ex}")
             TextPopup("Error","Invalid genome.")
 
     def place_piece_hash(self,hash : str, color: colors, x : int, y : int):
@@ -224,7 +232,7 @@ class ChessboardUI(tkinter.Canvas):
         self.redraw_pieces()
 
     def place_preset(self, preset : str,color : colors):
-        parsed_preset : list(str) = preset.strip().split()
+        parsed_preset : list[str] = preset.strip().split()
         try:
             self.clear_selected()
             self.selected = Vector(-1,-1)

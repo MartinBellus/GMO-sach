@@ -8,4 +8,5 @@ IMAGE_DIR = "images/"
 
 TIME_PER_PLAYER = 60 * 8
 
-HTTP_URL = "http://gmo.ksp.sk:5000/"
+# HTTP_URL = "http://gmo.ksp.sk:5000/"
+HTTP_URL = "http://0.0.0.0:5000/"

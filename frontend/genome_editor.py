@@ -5,21 +5,42 @@ from utility.enums import colors
 
 
 class EditorUI(tkinter.Frame):
+    """
+    Component for editing genomes. Contains text editor, file selector and place button
+
+    Args:
+        parent : parent widget
+        ui : chessboard ui
+        kwargs : keywords for tkinter.Frame
+    """
     def __init__(self,parent : tkinter.Tk,ui : ChessboardUI,**args):
         super().__init__(parent,**args)
         self.ui = ui
         self.editor : GenomeEditor = GenomeEditor(self)
         self.file_selector : FileSelector = FileSelector(self,self.editor)
-        # self.place_buttom : tkinter.Button = tkinter.Button(self,text="Place piece",command=lambda : ui.place_piece(self.get_text(),colors.WHITE,4,4))
         self.place_button : PlaceButton = PlaceButton(self,self.place_piece)
 
     def get_text(self) -> str:
         return self.editor.get("1.0","end")
 
     def place_piece(self,color : colors,x,y):
+        """
+        Place piece with current genome at specified position
+
+        Args:
+            color : color of piece
+            x : x coordinate
+            y : y coordinate
+        """
         self.ui.place_piece(self.get_text(),color,x,y)
     
     def save_to(self,name : str):
+        """
+        Save current genome to file
+
+        Args:
+            name : file name 
+        """
         try:
             with open(name,"w") as file:
                 file.write(self.get_text())
@@ -31,7 +52,6 @@ class EditorUI(tkinter.Frame):
         super().pack(fill="x",expand=True,**args)
         self.editor.pack(fill="both",expand=True)
         self.file_selector.pack(side="bottom")
-        # self.place_buttom.pack()
         self.place_button.pack(pady=5)
 
         
@@ -49,6 +69,9 @@ class FileSelector(tkinter.Button):
         self.target : GenomeEditor = target
 
     def select_files(self):
+        """
+        Open file dialog and load genome from file
+        """
         filetypes = (
             ('Genomes', '*.dna'),
             ('All files', '*.*')

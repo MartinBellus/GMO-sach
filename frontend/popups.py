@@ -1,8 +1,20 @@
 import tkinter
+
+from typing import Callable
+
 from utility.exceptions import NetworkException, RemoteFileNotFound
 
 class InputPopup(tkinter.Toplevel):
-    def __init__(self,title : str,text : str, callback, **args):
+    """
+    Popup for handling user input
+
+    Args:
+        title : title of popup
+        text : popup text
+        callback : function to call after submit
+        args : keywords for tkinter.Toplevel
+    """
+    def __init__(self,title : str,text : str, callback : Callable[[str], None], **args):
         super().__init__(**args)
         super().title(title)
         super().resizable(False,False)
@@ -29,19 +41,29 @@ class InputPopup(tkinter.Toplevel):
             self.after(500,self.destroy)
         except NetworkException:
             self.status.config(text="Server can not be reached",fg="Red")
-        
+
         except RemoteFileNotFound:
             self.status.config(text="Invalid key",fg="Red")
 
         except Exception as ex:
-            self.status.config(text=ex,fg="Red")
+            self.status.config(text=str(ex),fg="Red")
+            print(f"Error: {ex}")
 
 class TextPopup(tkinter.Toplevel):
-    def __init__(self,title : str,*args,ttl : int = 5000,**kwargs):
+    """
+    Popup for displaying text
+
+    Args:
+        title : title of popup
+        lines : popup text
+        ttl : time to live in ms
+        kwargs : keywords for tkinter.Toplevel
+    """
+    def __init__(self,title : str,*lines : str,ttl : int = 5000,**kwargs):
         super().__init__(**kwargs)
         super().title(title)
         super().resizable(False,False)
-        for text in args:
+        for text in lines:
             main_text = tkinter.Label(self,text=text,font=("Consolas",15),wraplength=400,justify="left",anchor="w")
             main_text.pack(anchor="w",fill="x",expand=True,pady=10,padx=15)
         self.after(ttl,self.destroy)

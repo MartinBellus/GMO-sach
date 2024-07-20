@@ -87,7 +87,8 @@ class Handler(server.BaseHTTPRequestHandler):
 
 
 try:
-    server = server.HTTPServer(('gmo.ksp.sk', 5000), Handler)
+    # server = server.HTTPServer(('gmo.ksp.sk', 5000), Handler)
+    server = server.HTTPServer(('0.0.0.0', 5000), Handler)
     print('Started server')
     server.serve_forever()
 except KeyboardInterrupt:
