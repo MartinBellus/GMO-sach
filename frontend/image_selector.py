@@ -1,10 +1,10 @@
 import os
 from PIL import Image,ImageTk
 from backend.chessboard import PieceInfo
-from utility.enums import colors
+from utility.enums import Colors
 from utility.constants import *
 
-def adjust(px : tuple[int,int,int,int],color : colors):
+def adjust(px : tuple[int,int,int,int],color : Colors):
     """
     Adjust colors of image pixel based on piece color
 
@@ -12,7 +12,7 @@ def adjust(px : tuple[int,int,int,int],color : colors):
         px : pixel
         color : color of piece
     """
-    if color == colors.WHITE:
+    if color == Colors.WHITE:
         const = 1.5
     else:
         const = 0.5

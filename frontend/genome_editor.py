@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import filedialog
 from frontend.chessboard import ChessboardUI
-from utility.enums import colors
+from utility.enums import Colors
 
 
 class EditorUI(tkinter.Frame):
@@ -23,7 +23,7 @@ class EditorUI(tkinter.Frame):
     def get_text(self) -> str:
         return self.editor.get("1.0","end")
 
-    def place_piece(self,color : colors,x,y):
+    def place_piece(self,color : Colors,x,y):
         """
         Place piece with current genome at specified position
 
@@ -94,7 +94,7 @@ class PlaceButton(tkinter.Frame):
         self.color_button = tkinter.Button(self,command=self.change_state,text="W",bg="white",font=("Consolas",12))
         self.form = tkinter.Entry(self,font=("Consolas",12),width=2)
         self.form.insert(0,"A1")
-        self.state : colors = colors.WHITE 
+        self.state : Colors = Colors.WHITE 
 
     def on_click(self,*args):
         try:
@@ -105,12 +105,12 @@ class PlaceButton(tkinter.Frame):
             self.callback(self.state,0,0)
     
     def change_state(self):
-        if self.state == colors.WHITE:
+        if self.state == Colors.WHITE:
             self.color_button.config(text="B",bg="black",fg="white")
-            self.state = colors.BLACK
+            self.state = Colors.BLACK
         else:
             self.color_button.config(text="W",bg="white",fg="black")
-            self.state = colors.WHITE
+            self.state = Colors.WHITE
 
     def pack(self,**kwargs):
         super().pack(**kwargs)

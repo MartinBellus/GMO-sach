@@ -10,7 +10,7 @@ from backend.move_descriptor import MoveDescriptor
 from backend.preset import Preset
 from utility.constants import *
 from utility.vector import Vector, inside_chessboard
-from utility.enums import colors, GameStatus
+from utility.enums import Colors, GameStatus
 
 class Color:
     #           BIELE       CIERNE
@@ -96,7 +96,7 @@ class ChessboardUI(tkinter.Canvas):
                 self.bind("<Button-3>",self.preview_click)
                 self.switch_state(GameStatus.IN_PROGRESS)
             case GameStatus.IN_PROGRESS:
-                if self.controller.get_current_player() == colors.WHITE:
+                if self.controller.get_current_player() == Colors.WHITE:
                     super().create_text(self.width/2,PADDING/2,text="White turn.",anchor="center",justify="center",tag="text")
                 else:
                     super().create_text(self.width/2,PADDING/2,text="Black turn.",anchor="center",justify="center",tag="text")
@@ -212,7 +212,7 @@ class ChessboardUI(tkinter.Canvas):
             for x in range(BOARD_Y):
                 super().itemconfig(self.squares[y][x],fill=Color.DEFAULT[(x + y)%2])
 
-    def place_piece(self, dna : str,color : colors, x : int, y : int):
+    def place_piece(self, dna : str,color : Colors, x : int, y : int):
         try:
             self.clear_selected()
             self.selected = Vector(-1,-1)
@@ -222,7 +222,7 @@ class ChessboardUI(tkinter.Canvas):
             print(f"Error when placing piece: {ex}")
             TextPopup("Error","Invalid genome.")
 
-    def place_piece_hash(self,hash : str, color: colors, x : int, y : int):
+    def place_piece_hash(self,hash : str, color: Colors, x : int, y : int):
         try:
             self.clear_selected()
             self.selected = Vector(-1,-1)
@@ -231,7 +231,7 @@ class ChessboardUI(tkinter.Canvas):
             raise ex
         self.redraw_pieces()
 
-    def place_preset(self, preset : str,color : colors):
+    def place_preset(self, preset : str,color : Colors):
         parsed_preset : list[str] = preset.strip().split()
         try:
             self.clear_selected()

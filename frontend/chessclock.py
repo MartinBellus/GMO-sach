@@ -1,6 +1,6 @@
 import tkinter
 from backend.chessboard import Chessboard
-from utility.enums import colors
+from utility.enums import Colors
 
 class ChessClockUI(tkinter.Frame):
     """
@@ -23,11 +23,11 @@ class ChessClockUI(tkinter.Frame):
         Fetch remaining time from controller and update labels.
         Runs every 500ms
         """
-        white_time_left = int(self.controller.get_remaining_time(colors.WHITE))
-        black_time_left = int(self.controller.get_remaining_time(colors.BLACK))
+        white_time_left = int(self.controller.get_remaining_time(Colors.WHITE))
+        black_time_left = int(self.controller.get_remaining_time(Colors.BLACK))
         self.white_time.config(text=f"{white_time_left//60:02}:{white_time_left%60:02}")
         self.black_time.config(text=f"{black_time_left//60:02}:{black_time_left%60:02}")
-        if self.controller.get_current_player() == colors.WHITE:
+        if self.controller.get_current_player() == Colors.WHITE:
             self.white_time.config(font=("Consolas",20,"bold"))
             self.black_time.config(font=("Consolas",20))
         else:
