@@ -6,6 +6,8 @@ class ExtendedEnum(StrEnum):
     def __contains__(cls, other):
         return other in cls.list()
 
+# fancy metaclass to allow in operator on enums
+
 
 class MyEnumMeta(EnumMeta):
     def __contains__(cls, item):
@@ -17,12 +19,12 @@ class MyEnumMeta(EnumMeta):
             return True
 
 
-class control_codons(StrEnum, metaclass=MyEnumMeta):
+class ControlCodons(StrEnum, metaclass=MyEnumMeta):
     SEPARATOR_BEGIN = "AHH"
     SEPARATOR_END = "HHA"
 
 
-class debuff_codons(StrEnum, metaclass=MyEnumMeta):
+class DebuffCodons(StrEnum, metaclass=MyEnumMeta):
     FORWARD_ONLY = "HAS"
     SPIRULATERAL_ONLY_REPEATS_ONCE = "HAC"
     NO_TELEPORTING_BETWEEN_SIDES = "HAA"
@@ -34,22 +36,22 @@ class debuff_codons(StrEnum, metaclass=MyEnumMeta):
     RANDOM_MOVE_DEVIATION = "HSA"
 
 
-class player_codons(StrEnum, metaclass=MyEnumMeta):
+class PlayerCodons(StrEnum, metaclass=MyEnumMeta):
     OPPONENT = "HSH"
 
 
-class players(Enum):
+class Players(Enum):
     ME = auto()
     OPPONENT = auto()
     NONE = auto()
 
 
-class colors(Enum):
+class Colors(Enum):
     BLACK = auto()
     WHITE = auto()
 
 
-class which_piece(StrEnum, metaclass=MyEnumMeta):
+class WhosePieceEnum(StrEnum, metaclass=MyEnumMeta):
     MINE = "A"
     OPPONENTS = "S"
     NONE = "C"
@@ -65,7 +67,7 @@ class GameStatus(Enum):
     LAB = auto()
 
 
-game_over_statuses = (GameStatus.BLACK_WON,
-                      GameStatus.WHITE_WON, GameStatus.DRAW)
+GameOverStatuses = (GameStatus.BLACK_WON,
+                    GameStatus.WHITE_WON, GameStatus.DRAW)
 
 MOVE_IMPOSSIBLE_CODON = "HHH"

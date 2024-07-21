@@ -1,4 +1,3 @@
-import requests
 from utility.encryption import encrypt, decrypt
 from utility.exceptions import NetworkException
 from utility.constants import *

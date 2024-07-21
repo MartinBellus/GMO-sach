@@ -2,7 +2,7 @@ from http import server
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
 
-
+# check if string contains only allowed characters
 def check_string_content(s: str):
     for i in s:
         if i not in ALPHABET:
@@ -19,6 +19,7 @@ class Handler(server.BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
+    # returns content of the file ./<query>/<req>, if it exists, otherwise returns 404
     def do_GET(self):
         try:
             path = self.path.split("/")
@@ -47,6 +48,8 @@ class Handler(server.BaseHTTPRequestHandler):
         except Exception as e:
             print(e)
 
+    # writes content to the file ./<query>/<req>
+    # if the file already exists, does nothing
     def do_POST(self):
         try:
 
@@ -87,8 +90,7 @@ class Handler(server.BaseHTTPRequestHandler):
 
 
 try:
-    # server = server.HTTPServer(('gmo.ksp.sk', 5000), Handler)
-    server = server.HTTPServer(('0.0.0.0', 5000), Handler)
+    server = server.HTTPServer(('localhost', 5000), Handler)
     print('Started server')
     server.serve_forever()
 except KeyboardInterrupt:

@@ -4,11 +4,12 @@ LETTER_TO_INDEX = {letter: index for index, letter in enumerate(ALPHABET)}
 ALPHABET_LENGTH = len(ALPHABET)
 
 
+# shitty encryption - prefix sum and then shift by key_id
+# is enough because we must assume players don't have access to the source code anyway
 def encrypt(string: str) -> str:
     assert all(
         i in LETTER_TO_INDEX for i in string), f"Only can encrypt characters {ALPHABET}"
 
-    # prefix sum and then shift by key_id
     l = [LETTER_TO_INDEX[c] for c in string]
     for i in range(1, len(l)):
         l[i] += l[i-1]

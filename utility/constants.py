@@ -6,7 +6,6 @@ WIDTH = 500
 HEIGHT = 500
 IMAGE_DIR = "images/"
 
-TIME_PER_PLAYER = 60 * 8
+TIME_PER_PLAYER = 60 * 8 #clock time in seconds
 
-# HTTP_URL = "http://gmo.ksp.sk:5000/"
-HTTP_URL = "http://0.0.0.0:5000/"
+HTTP_URL = "http://localhost:5000/"

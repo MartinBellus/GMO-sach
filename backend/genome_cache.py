@@ -1,16 +1,10 @@
-import requests
 from time import sleep
 from utility.encryption import encrypt, decrypt
 from utility.constants import *
 from utility.exceptions import NetworkException
 from backend.network import NetworkQuery
 
-
-
 genome_cache: dict[str,str] = {}
-
-
-
 
 def fetch_genome(hash: str) -> str:
     if hash in genome_cache:
@@ -25,9 +19,9 @@ def fetch_genome(hash: str) -> str:
     if not response[0]:
         raise NetworkException
     
-    string = response[1]
+    encrypted_string = response[1]
 
-    string = decrypt(string)
+    string = decrypt(encrypted_string)
 
     genome_cache[hash] = string
 
@@ -40,10 +34,10 @@ def upload_genome(hash: str, dna:str) -> None:
     if hash in genome_cache:
         return
 
-    ehash = encrypt(hash)
-    edna = encrypt(dna)
+    encrypted_hash = encrypt(hash)
+    encrypted_dna = encrypt(dna)
     
-    query=NetworkQuery("genome", "POST", ehash, edna)
+    query=NetworkQuery("genome", "POST", encrypted_hash, encrypted_dna)
     query.do_query()
 
     genome_cache[hash] = dna

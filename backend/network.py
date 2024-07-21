@@ -11,12 +11,13 @@ TIMEOUT = 1
 
 
 class NetworkQuery:
-    def __init__(self, subaddres: str, type: str, filename: str, payload: str=None):
-        if subaddres[-1] != "/":
-            subaddres += "/"
-        self.subaddres = subaddres
-        self.type = type
+    def __init__(self, subaddress: str, type: str, filename: str, payload: str = None):
         assert type == "GET" or type == "POST", "invalid http request type"
+        if subaddress[-1] != "/":
+            subaddress += "/"
+
+        self.subaddress = subaddress
+        self.type = type
         self.filename = filename
         self.payload = payload
 
@@ -25,19 +26,21 @@ class NetworkQuery:
             return self.do_post()
         elif self.type == "GET":
             return self.do_get()
-    
+
     def get_path(self):
-        return HTTP_URL+self.subaddres+self.filename
+        return HTTP_URL+self.subaddress+self.filename
 
     def do_post(self) -> (bool, str):
         for i in range(POST_ATTEMPTS):
             try:
                 response = requests.post(
                     self.get_path(), self.payload, timeout=TIMEOUT)
+
                 if response.status_code == 200:
                     return (True, response.raw)
                 else:
                     raise NetworkException
+
             except requests.exceptions.Timeout:
                 pass
             time.sleep(0.1 * 2**i)
@@ -48,12 +51,14 @@ class NetworkQuery:
         for i in range(QUERY_ATTEMPTS):
             try:
                 response = requests.get(self.get_path(), timeout=TIMEOUT)
-                if response.status_code==200:
+
+                if response.status_code == 200:
                     return (True, response.text)
-                elif response.status_code==404:
+                elif response.status_code == 404:
                     raise RemoteFileNotFound
                 else:
                     raise NetworkException
+
             except requests.exceptions.Timeout:
                 pass
             time.sleep(0.1 * 2**i)

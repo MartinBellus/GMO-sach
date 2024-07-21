@@ -6,7 +6,7 @@ from backend.chessboard import Chessboard
 from backend.genome import Genome
 from backend.preset import Preset
 from utility.constants import *
-from utility.enums import colors
+from utility.enums import Colors
 import tkinter
 
 
@@ -17,10 +17,10 @@ def help():
               "Pomocou Save Preset si môžeš uložiť aktuálne rozloženie figúrok pre bieleho a čierneho hráča.")
 
 def white_preset():
-    InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x:ui.place_preset(x,colors.WHITE))
+    InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x:ui.place_preset(x,Colors.WHITE))
 
 def black_preset():
-    InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x: ui.place_preset(x,colors.BLACK))
+    InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x: ui.place_preset(x,Colors.BLACK))
 
 def save_preset():
     board = controller.get_board_for_reading()

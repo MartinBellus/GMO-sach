@@ -5,7 +5,7 @@ from frontend.menu import Menu
 from frontend.chessclock import ChessClockUI
 from backend.chessboard import Chessboard
 from utility.constants import *
-from utility.enums import colors, GameStatus
+from utility.enums import Colors, GameStatus
 from utility.vector import Vector
 import tkinter
 
