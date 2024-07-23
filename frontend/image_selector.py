@@ -28,9 +28,9 @@ class ImageSelector:
         # load all images
         for file in os.listdir(IMAGE_DIR):
             try:
-                image = Image.open(IMAGE_DIR + file)
-                image.getdata()[0][3]
-                self.images.append(Image.open(IMAGE_DIR + file).resize((width,height)))
+                image = Image.open(IMAGE_DIR + file).convert("RGBA")
+                assert len(image.getdata()[0]) == 4, "Image must have alpha channel"
+                self.images.append(image.resize((width,height)))
             except Exception as ex:
                 print(f"Can not open {file}: {ex}")
 
