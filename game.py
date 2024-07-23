@@ -4,7 +4,7 @@ from frontend.menu import Menu
 from frontend.chessclock import ChessClockUI
 from backend.chessboard import Chessboard
 from utility.constants import *
-from utility.enums import colors, GameStatus
+from utility.enums import Colors, GameStatus
 import tkinter
 
 def start_game():
@@ -12,15 +12,17 @@ def start_game():
         ui.switch_state(GameStatus.START_GAME)
 
 def white_preset():
-    InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x:ui.place_preset(x,colors.WHITE))
+    InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",
+        lambda x:ui.place_preset(x,Colors.WHITE))
 
 def black_preset():
-    InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x: ui.place_preset(x,colors.BLACK))
+    InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",
+        lambda x: ui.place_preset(x,Colors.BLACK))
 
 def help():
     TextPopup("Help","PRED HROU","Pomocou Place Preset ulož preset pre daného hráča. Potom klikni ľavým tlačítkom na figúrky, ktoré chceš ozačiť za kráľa.",
               "POČAS HRY","Cieľ hry: Súperovi vyprší čas alebo sa mu zníži počet kráľov.",
-              "Ľavým klikom sa hýbe, pravým si vieš pozrieť, ako sa môže hýbať ľubovoľná figúrka.")
+              "Ľavým klikom sa hýbe, pravým si vieš pozrieť, ako sa môže hýbať ľubovoľná figúrka.", ttl = 10000)
 
 if __name__ == "__main__":
     root = tkinter.Tk()

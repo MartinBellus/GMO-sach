@@ -14,13 +14,15 @@ def help():
     # TODO
     TextPopup("Help","Ľavým klikom sa pohybujú figúrky, pravým zistíš, aký má daná figúrka kód.",
               "Napravo sa nachádza editor, v ktorom môžeš meniť genóm figúrky a vkladať ju na plochu. Pomocou Fetch Piece alebo Open Genome môžeš načítať už existujúci genóm do editora.",
-              "Pomocou Save Preset si môžeš uložiť aktuálne rozloženie figúrok pre bieleho a čierneho hráča.")
+              "Pomocou Save Preset si môžeš uložiť aktuálne rozloženie figúrok pre bieleho a čierneho hráča.", ttl=10000)
 
 def white_preset():
-    InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x:ui.place_preset(x,Colors.WHITE))
+    InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",
+        lambda x:ui.place_preset(x,Colors.WHITE))
 
 def black_preset():
-    InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",lambda x: ui.place_preset(x,Colors.BLACK))
+    InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",
+        lambda x: ui.place_preset(x,Colors.BLACK))
 
 def save_preset():
     board = controller.get_board_for_reading()
@@ -33,23 +35,27 @@ def save_preset():
             hashes_bot.append(board[0][i].genome_hash)
     if len(hashes_top) == BOARD_X:
         preset_top : Preset = Preset(hashes_top)
-        TextPopup("Black Preset Key",f"Black preset pieces: {hashes_top}",f"Black preset key: {preset_top.hash()}")
+        TextPopup("Black Preset Key",f"Black preset pieces: {hashes_top}",
+            f"Black preset key: {preset_top.hash()}", ttl=10000)
     if len(hashes_bot) == BOARD_X:
         preset_bot : Preset = Preset(hashes_bot)
-        TextPopup("White Preset Key",f"White preset pieces: {hashes_bot}",f"White preset key: {preset_bot.hash()}")
+        TextPopup("White Preset Key",f"White preset pieces: {hashes_bot}",
+            f"White preset key: {preset_bot.hash()}", ttl=10000)
     if len(hashes_bot) != BOARD_X and len(hashes_top) != BOARD_X:
         TextPopup("Error",f"Place {BOARD_X} pieces in bottom or top row.")
 
 def save_as():
-    InputPopup("Save piece as","Path to file, where you want to save piece",lambda x:editor.save_to(x))
- 
+    InputPopup("Save piece as","Path to file, where you want to save piece",
+        lambda x:editor.save_to(x))
+
 def fetch():
-    InputPopup("Fetch piece from key","Insert piece code, it will be loaded into code editor.",lambda x: editor.editor.set_text(Genome.from_hash(x).raw_dna))
+    InputPopup("Fetch piece from key","Insert piece code, it will be loaded into code editor.",
+        lambda x: editor.editor.set_text(Genome.from_hash(x).raw_dna))
 
 if __name__ == "__main__":
     root = tkinter.Tk()
     root.title("LAB")
-    controller = Chessboard(1)
+    controller = Chessboard(True)
     ui = ChessboardUI(root,controller,width=WIDTH,height=HEIGHT)
     editor = EditorUI(root,ui,width=100,height=HEIGHT)
 

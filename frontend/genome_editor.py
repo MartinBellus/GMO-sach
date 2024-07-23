@@ -33,13 +33,13 @@ class EditorUI(tkinter.Frame):
             y : y coordinate
         """
         self.ui.place_piece(self.get_text(),color,x,y)
-    
+
     def save_to(self,name : str):
         """
         Save current genome to file
 
         Args:
-            name : file name 
+            name : file name
         """
         try:
             with open(name,"w") as file:
@@ -54,7 +54,7 @@ class EditorUI(tkinter.Frame):
         self.file_selector.pack(side="bottom")
         self.place_button.pack(pady=5)
 
-        
+
 class GenomeEditor(tkinter.Text):
     def __init__(self,parent):
         super().__init__(parent,font=("Consolas",12),width=30)
@@ -90,11 +90,11 @@ class PlaceButton(tkinter.Frame):
     def __init__(self,parent,callback,**kwargs):
         super().__init__(parent,**kwargs)
         self.callback = callback
-        self.place_button = tkinter.Button(self,text="Place piece",command=self.on_click)
+        self.place_button = tkinter.Button(self,text="Place piece",command=self.on_click, activebackground="white", activeforeground="black")
         self.color_button = tkinter.Button(self,command=self.change_state,text="W",bg="white",font=("Consolas",12))
         self.form = tkinter.Entry(self,font=("Consolas",12),width=2)
         self.form.insert(0,"A1")
-        self.state : Colors = Colors.WHITE 
+        self.state : Colors = Colors.WHITE
 
     def on_click(self,*args):
         try:
@@ -103,13 +103,13 @@ class PlaceButton(tkinter.Frame):
             self.callback(self.state,x,y)
         except:
             self.callback(self.state,0,0)
-    
+
     def change_state(self):
         if self.state == Colors.WHITE:
-            self.color_button.config(text="B",bg="black",fg="white")
+            self.color_button.config(text="B",bg="black",fg="white",activebackground="black",activeforeground="white")
             self.state = Colors.BLACK
         else:
-            self.color_button.config(text="W",bg="white",fg="black")
+            self.color_button.config(text="W",bg="white",fg="black",activebackground="white",activeforeground="black")
             self.state = Colors.WHITE
 
     def pack(self,**kwargs):
@@ -117,10 +117,3 @@ class PlaceButton(tkinter.Frame):
         self.form.pack(side="left",padx=5)
         self.color_button.pack(side="left")
         self.place_button.pack(side="left",padx=20)
-
-if __name__ == "__main__":
-    tk = tkinter.Tk()
-    ed = EditorUI(tk)
-    ed.pack(fill="both")
-
-    tkinter.mainloop()
