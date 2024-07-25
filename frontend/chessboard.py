@@ -244,7 +244,6 @@ class ChessboardUI(tkinter.Canvas):
         self.redraw_pieces()
 
     def place_preset(self, preset : str,color : Colors):
-        parsed_preset : list[str] = preset.strip().split()
         try:
             self.clear_selected()
             self.selected = Vector(-1,-1)

@@ -21,10 +21,14 @@ vytvorené rozloženia figúrok a potom začnú hrať šach. Hra obsahuje hernú
 
 # Prerekvizity
 
+Na spustenie treba verziu pythonu 3.9 alebo vyššiu.
+
 Všetky potrebné knižnice sú napísané v súbore `requirements.txt`. Na ich
 stiahnutie stačí zavolať príkaz `pip install -r requirements.txt`.
 
-Obrázky pre figúrky sa nachádzajú v priečinku `images`. Všetky obrázky sú vo formáte `png` s alfa kanálom.
+Obrázky pre figúrky sa nachádzajú v priečinku `images`. Všetky obrázky sú vo
+formáte `png` s alfa kanálom. Ak je obrázkov príliš málo, môže sa stať, že
+rôzne figúrky budú v hre vyzerať rovnako.
 
 Na spustenie hry je potrebné, aby v priečinku `images/special` boli 2 obrázky s
 názvami `king.png` a `freeeze.png`, ktoré budú použité na označenie kráľa a
@@ -33,17 +37,23 @@ zmrazenie obrazovky.
 # Ovládanie a spúšťanie
 
 Pred spustením aplikácie je potrebné aby bežal server na adrese zadefinovanej v
-súbore `utility/constants.py` ako `HTTP_URL`.
+súbore `utility/constants.py` ako `HTTP_URL`. Server sa nachádza v priečinku
+`server` a jeho funguvanie je popísané v súbore
+`server/server-documentation.md`.
 
 ## Editor genómov
 
-Na spustenie editora stačí spustiť súbor `lab.py`. Po spustení sa zobrazí okno s editorom a testovacou šachovnicou.
+Na spustenie editora stačí spustiť súbor `lab.py`. Po spustení sa zobrazí okno
+s editorom a testovacou šachovnicou.
 
 ### Ovládanie
 
-Na pravej strane Labu sa nachádza editor genómov. Toto je textový editor, v ktorom sa dá upravovať genóm. Na spodku sa nachádzajú tlačitka na položenie figúrky na testovaciu šachovnicu a načítanie genómu zo súbora.
+Na pravej strane Labu sa nachádza editor genómov. Toto je textový editor, v
+ktorom sa dá upravovať genóm. Na spodku sa nachádzajú tlačitka na položenie
+figúrky na testovaciu šachovnicu a načítanie genómu zo súbora.
 
-Na ukladanie a načítavanie figúrok a rozložení figúrok slúži menu v hornej časti okna. Nachádza sa v ňom zopár tlačitok.
+Na ukladanie a načítavanie figúrok a rozložení figúrok slúži menu v hornej
+časti okna. Nachádza sa v ňom zopár tlačitok.
 
 - `Reset` - vymaže všetky figúrky z testovacej šachovnice
 - `Place White Preset` - načíta prednastavené rozloženie figúrok podľa kódu alebo podľa kódu 8 figúrok v rozložení a položi ho na stranu bieleho hráča na šachovnici
@@ -53,16 +63,29 @@ Na ukladanie a načítavanie figúrok a rozložení figúrok slúži menu v horn
 - `Fetch Piece` - načíta genóm zo servera podľa kódu a vloží ho do editora
 - `Help` - zobrazí nápovedu
 
-Figúrky na šachovnici sa ovládajú myšou. Ľavým kliknutím na figúrku sa zvýraznia políčka, na ktoré táto figúrka dokáže stúpiť. Ľavým kliknutím na jedno z týchto políčok sa figúrka presunie na toto políčko. Pravým kliknutím na figúrku sa zobrazia informácie o nej, hlavne jej kód.
+Figúrky na šachovnici sa ovládajú myšou. Ľavým kliknutím na figúrku sa
+zvýraznia políčka, na ktoré táto figúrka dokáže stúpiť. Ľavým kliknutím na
+jedno z týchto políčok sa figúrka presunie na toto políčko. Pravým kliknutím na
+figúrku sa zobrazia informácie o nej, hlavne jej kód.
 
 ## Hra
 
-Na spustenie hry stačí spustiť súbor `game.py`. Po spustení sa zobrazí okno so šachovnicou a šachovými hodinami.
+Na spustenie hry stačí spustiť súbor `game.py`. Po spustení sa zobrazí okno so
+šachovnicou a šachovými hodinami.
 
-Na spustenie hry je najprv potrebné, aby hráči načítali začiatočné rozloźenie figúrok pomocou tlačítok v menu. Po načítaní si každý z hráčov pravým kliknutím vyberie figúrku, ktorá bude jeho kráľ. Po tomto kroku sa môže spustiť hra tlačítkom `Start Game`.
+Na spustenie hry je najprv potrebné, aby hráči načítali začiatočné rozloźenie
+figúrok pomocou tlačítok `Place White Preset` a `Place Black Preset` v menu. Po
+načítaní si každý z hráčov pravým kliknutím vyberie figúrku, ktorá bude jeho
+kráľ. po tomto kroku sa môže spustiť hra tlačítkom `start game`.
 
-Na pravej strane sa nachádzajú šachové hodiny. Po stlačení tlačítka `Start Game` sa spustia a začne sa odpočítavať čas aktívneho hráča. Hodiny aktívneho hráča sú vždy zvýraznené. Po uplynutí času hráč prehráva.
+Na pravej strane sa nachádzajú šachové hodiny. Po stlačení tlačítka `Start
+Game` sa spustia a začne sa odpočítavať čas aktívneho hráča. Hodiny aktívneho
+hráča sú vždy zvýraznené. Po uplynutí času alebo vyhodení jedného z jeho kráľov
+hráč prehráva.
 
 ### Ovládanie
 
-Figúrky na šachovnici sa ovládajú rovnako ako v Labe. Ľavým kliknutím sa zvýraznia políčka, na ktoré dokáže figúrka stúpiť a ďalším ľavím kliknutím sa figúrka presunie na toto políčko. Pravým kliknutím na protivníkovu figúrku sa zobrazia políčka, na ktoré sa táto figúrka dokáže pohnúť.
+Figúrky na šachovnici sa ovládajú rovnako ako v Labe. Ľavým kliknutím sa
+zvýraznia políčka, na ktoré dokáže figúrka stúpiť a ďalším ľavím kliknutím sa
+figúrka presunie na toto políčko. Pravým kliknutím na protivníkovu figúrku sa
+zobrazia políčka, na ktoré sa táto figúrka dokáže pohnúť.

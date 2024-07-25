@@ -27,18 +27,18 @@ class ImageSelector:
     def __init__(self,width : int = 50,height : int = 50):
         # load all images
         for file in os.listdir(IMAGE_DIR):
-            try:
-                image = Image.open(IMAGE_DIR + file).convert("RGBA")
-                assert len(image.getdata()[0]) == 4, "Image must have alpha channel"
-                self.images.append(image.resize((width,height)))
-            except Exception as ex:
-                print(f"Can not open {file}: {ex}")
+            if os.path.isfile(IMAGE_DIR + file):
+                try:
+                    image = Image.open(IMAGE_DIR + file).convert("RGBA")
+                    assert len(image.getdata()[0]) == 4, "Image must have alpha channel"
+                    self.images.append(image.resize((width,height)))
+                except Exception as ex:
+                    print(f"Can not open {file}: {ex}")
 
         # load all special images
         for file in os.listdir(IMAGE_DIR + "special/"):
             try:
                 self.special[file[:-4]] = Image.open(IMAGE_DIR + "special/" + file).resize((width,height))
-                print(file[:-4])
             except Exception as ex:
                 print(f"Can not open {file}: {ex}")
 
