@@ -17,11 +17,11 @@ def help():
               "Pomocou Save Preset si môžeš uložiť aktuálne rozloženie figúrok pre bieleho a čierneho hráča.", ttl=10000)
 
 def white_preset():
-    InputPopup("Preset of White","Insert preset code or 8 space separated piece codes, which will be saved as preset.",
+    InputPopup("Preset of White","Insert preset code to be placed for white player.",
         lambda x:ui.place_preset(x,Colors.WHITE))
 
 def black_preset():
-    InputPopup("Preset of Black","Insert preset code or 8 space separated piece codes, which will be saved as preset.",
+    InputPopup("Preset of Black","Insert preset code to be placed for black player.",
         lambda x: ui.place_preset(x,Colors.BLACK))
 
 def save_preset():

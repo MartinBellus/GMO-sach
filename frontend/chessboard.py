@@ -7,7 +7,6 @@ from frontend.popups import TextPopup, InputPopup
 from frontend.image_selector import ImageSelector
 from backend.chessboard import Chessboard, PieceInfo
 from backend.move_descriptor import MoveDescriptor
-from backend.preset import Preset
 from utility.constants import *
 from utility.vector import Vector, inside_chessboard
 from utility.enums import Colors, GameStatus
@@ -17,8 +16,6 @@ class Color:
     DEFAULT =   ["#eae9d2"  ,"#4b7399"]
     SELECTED =  ["#eb7b6a"  ,"#cb645e"]
     MOVE =      ["#b7d171"  ,"#87a65a"]
-    ATTACK =    ["#eb7b6a"  ,"#cb645e"]
-    SHOOT =     ["green"    ,"green"]
 
 def invert(r : int) -> int:
     return BOARD_Y - r - 1
@@ -71,6 +68,12 @@ class ChessboardUI(tkinter.Canvas):
             self.switch_state(GameStatus.NOT_STARTED)
 
     def switch_state(self,new_state : GameStatus,*args):
+        """
+        Switch state of the chessboard UI
+
+        Display different text and rebind left/right click based on new_state.
+        Also handle freeze and promotions.
+        """
         super().delete("text")
 
         if self.controller.is_frozen():
@@ -118,7 +121,7 @@ class ChessboardUI(tkinter.Canvas):
             case GameStatus.LAB:
                 super().create_text(self.width/2,PADDING/2,text="Welcome to LAB",anchor="center",justify="center",tag="text")
                 self.bind("<Button-1>",self.ingame_click)
-                self.bind("<Button-3>",self.get_dna)
+                self.bind("<Button-3>",self.get_dna_click)
             case _:
                 print("neexistuje")
                 raise Exception("Game state does not exist")
@@ -129,6 +132,9 @@ class ChessboardUI(tkinter.Canvas):
             promotion_popup.wait_window()
 
     def ingame_click(self,event : tkinter.Event):
+        """
+        Select piece or move piece based on click
+        """
         self.clear_selected()
         self.preview_selected = Vector(-1,-1)
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
@@ -150,6 +156,9 @@ class ChessboardUI(tkinter.Canvas):
             self.draw_moves(self.controller.get_moves(click))
 
     def preview_click(self,event : tkinter.Event):
+        """
+        Preview possible moves of clicked piece
+        """
         self.clear_selected()
         self.selected = Vector(-1,-1)
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
@@ -173,7 +182,7 @@ class ChessboardUI(tkinter.Canvas):
             pass
         self.redraw_pieces()
 
-    def get_dna(self,event : tkinter.Event):
+    def get_dna_click(self,event : tkinter.Event):
         click : Vector = Vector(int((event.x - PADDING)//self.size_x),invert(int((event.y - PADDING)//self.size_y)))
         if not inside_chessboard(click):
             return
@@ -213,6 +222,9 @@ class ChessboardUI(tkinter.Canvas):
                 super().itemconfig(self.squares[y][x],fill=Color.DEFAULT[(x + y)%2])
 
     def place_piece(self, dna : str,color : Colors, x : int, y : int):
+        if not inside_chessboard(Vector(x,y)):
+            TextPopup("Error", "Piece coordinates out of chessboard.")
+            return
         try:
             self.clear_selected()
             self.selected = Vector(-1,-1)
@@ -220,7 +232,7 @@ class ChessboardUI(tkinter.Canvas):
             self.redraw_pieces()
         except Exception as ex:
             print(f"Error when placing piece: {ex}")
-            TextPopup("Error","Invalid genome.")
+            TextPopup("Error","Can not place piece")
 
     def place_piece_hash(self,hash : str, color: Colors, x : int, y : int):
         try:
@@ -236,10 +248,7 @@ class ChessboardUI(tkinter.Canvas):
         try:
             self.clear_selected()
             self.selected = Vector(-1,-1)
-            if len(parsed_preset) == 1:
-                self.controller.load_preset(Preset.fetch_preset(parsed_preset[0]),color)
-            else:
-                self.controller.load_preset(Preset(parsed_preset),color)
+            self.controller.load_preset(preset, color)
             self.redraw_pieces()
         except Exception as ex:
             raise ex
