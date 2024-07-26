@@ -70,27 +70,26 @@ class Chessboard:
     def _insert_piece(self, piece: Piece, position: Vector):
         self.chessboard[position] = piece
 
-
     def get_moves(self, coords: Vector, allow_getting_opponents_moves: bool = False) -> list[MoveDescriptor]:
-        # check if moves are already calculated
-        if coords in self.current_descriptors and not self._is_sandbox():
-            return self.current_descriptors[coords]
-
         # check if there is a piece at the given coords
         if coords not in self.chessboard:
             # raise Exception("No piece at given coordinates")
             return []
+
+        if not self._is_sandbox() and color != self.get_current_player() and not allow_getting_opponents_moves:
+            return []
+
+        # check if moves are already calculated
+        if coords in self.current_descriptors and not self._is_sandbox():
+            return self.current_descriptors[coords]
 
         self._real_game_assert(self.get_promotion() is None,
                                "Pawn promotion is required before making a move")
 
         piece = self.chessboard[coords]
         color = piece.color
-        if not self._is_sandbox() and color != self.get_current_player() and not allow_getting_opponents_moves:
-            return []
 
         moves = piece.get_moves(self.chessboard, coords)
-
 
         # save moves for future use
         self.current_descriptors[coords] = moves
@@ -256,6 +255,8 @@ class Chessboard:
             new_genome, old_piece.color, is_king=old_piece.is_king)
         self.need_to_promote = False
         self.promotions.pop(0)
+
+        self.current_descriptors.clear()
 
         self.clock.start(self.get_current_player())
 
