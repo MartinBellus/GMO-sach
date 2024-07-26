@@ -25,23 +25,13 @@ def black_preset():
         lambda x: ui.place_preset(x,Colors.BLACK))
 
 def save_preset():
-    board = controller.get_board_for_reading()
-    hashes_top : list[str] = []
-    hashes_bot : list[str] = []
-    for i in range(BOARD_X):
-        if board[-1][i] != None:
-            hashes_top.append(board[-1][i].genome_hash)
-        if board[0][i] != None:
-            hashes_bot.append(board[0][i].genome_hash)
-    if len(hashes_top) == BOARD_X:
-        preset_top : Preset = Preset(hashes_top)
-        TextPopup("Black Preset Key",f"Black preset pieces: {hashes_top}",
-            f"Black preset key: {preset_top.hash()}", ttl=10000)
-    if len(hashes_bot) == BOARD_X:
-        preset_bot : Preset = Preset(hashes_bot)
-        TextPopup("White Preset Key",f"White preset pieces: {hashes_bot}",
-            f"White preset key: {preset_bot.hash()}", ttl=10000)
-    if len(hashes_bot) != BOARD_X and len(hashes_top) != BOARD_X:
+    preset_top = controller.save_preset(Colors.BLACK)
+    preset_bot = controller.save_preset(Colors.WHITE)
+    if preset_top != None:
+        TextPopup("Black Preset Key", f"Black preset saved with key: {preset_top}", ttl=10000)
+    if preset_bot != None:
+        TextPopup("White Preset Key", f"White preset saved with key: {preset_bot}", ttl=10000)
+    if preset_bot == None and preset_top == None:
         TextPopup("Error",f"Place {BOARD_X} pieces in bottom or top row.")
 
 def save_as():
