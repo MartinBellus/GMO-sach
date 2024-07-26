@@ -327,3 +327,20 @@ class Chessboard:
         if promotion is not None:
             return promotion[1]
         return Colors.WHITE if self.turn_number % 2 == 0 else Colors.BLACK
+    
+    def save_preset(self, color: Colors) -> str | None:
+        row = 0 if color == Colors.WHITE else BOARD_Y - 1
+        
+        hashes = []
+
+        for i in range(BOARD_X):
+            if Vector(i, row) not in self.chessboard:
+                return None
+            
+            piece = self.chessboard[Vector(i, row)]
+            hashes.append(piece.genome.hash())
+        
+        preset = Preset(hashes)
+        preset.save()
+
+        return preset.hash()
