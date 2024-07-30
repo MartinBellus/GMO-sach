@@ -48,6 +48,7 @@ Preset podobne umožňuje pomocou jedného kódu uložiť celý zadný rad figú
     - Vloží novú figúrku na šachovnicu
     - Ak je políčko obsadené, prepíše ho
     - **Dostupné len v sandbox móde**
+    - **Ak figúrka s daným hashom na serveri neexistuje, hádže RemoteFileNotFound**
     - *genome_hash* - *str*, hash DNA figúrky
     - *color* - *Colors*(enum), farba figúrky
     - *position* - *Vector*, políčko na šachovnci, kde sa má figúrka nachádzať
@@ -103,6 +104,7 @@ Preset podobne umožňuje pomocou jedného kódu uložiť celý zadný rad figú
 
 - *promote(position, dna_hash) -> None*
   - Premení pešiaka na danej pozícií na figúrku s daným genomom
+  - **Ak figúrka s daným hashom na serveri neexistuje, hádže RemoteFileNotFound a zlyhá**
   - *position* - *Vector*, políčko na šachovnci, kde sa pešiak nachádza
   - *dna_hash* - *str*, hash DNA figúrky
 
@@ -121,13 +123,15 @@ Preset podobne umožňuje pomocou jedného kódu uložiť celý zadný rad figú
 
 - *load_preset(preset_hash, color) -> None*
   - Použije preset figúriek
+    - Do posledného radu šachovnice z pohľadu danej farby sa umiestnia figúrky z presetu
+    - Predposledný rad zaplnia pešiaci
   - **Môže byť volané len pred začiatkom hry a iba raz pre každú farbu**
+  - **Ak preset s daným hashom na serveri neexistuje, hádže RemoteFileNotFound**
   - *preset_hash* - *str*, hash presetu
   - *color* - *Colors*, hráč, ktorý používa daný preset
   
 - *save_preset(color) -> str|None*
-  - Uloží aktuálny stav figúriek danej farby ako preset
-    - Daný hráč musí mať plný zadný rad
+  - Uloží zadný rad figúrok danej farby ako preset
   - *color* - *Colors*, farba, ktorej figúrky sa majú uložiť
   - return - *str*, hash presetu alebo *None* ak daný hráč nemá plný zadný rad
 

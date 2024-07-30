@@ -4,6 +4,7 @@ Bloky tvaru _oddeľovač spirulaterál_ popisujúce ťahy, ktoré vie figúrka v
     - môže ich byť ľubovoľne veľa po sebe opakovaných
     - biele znaky sa ignorujú
     - hráč vie pri ťahu použiť ľubovoľný z blokov(ale nemôže ich kombinovať)
+    - ak sa na dané políčko dá dostať viacerými spirulaterálmi, použije sa ten z nich, ktorý je v DNA ako prvý
 
 DNA sa skladá len zo znakov SACH
 DNA sa delí na trojice znakov(kodóny)
@@ -14,10 +15,10 @@ popisuje vlastnosti nasledujúceho spirulaterálu
 
 Tvar **ST¹T²O¹O²O³Z**
 
-S="AHH" a Z="HHA" sú fixné - indikujú začiatok a koniec bloku
+S="AHH" a Z="HHA" sú fixné - indikujú začiatok a koniec oddeľovača
 
 T¹, T² - ktorej farby budú figúrky na pôvodnom a novom políčku
-    - buď nepriateľský kodón (HSH), alebo debuff kodón pre vlastné figúrky -- aby sme potresatli vytváranie vlastných figúrok
+    - buď nepriateľský kodón (HSH), alebo debuff kodón pre vlastné figúrky -- aby sme potresatli kopírovanie vlastných figúrok
 
 O¹, O², O³ - ktorá figúrka bude po ťahu na pôvodnom a novom políčku, ak sa pohnem na políčko s mojou figúrkou(O¹), nepriateľovou(O²) alebo prázdne(O³)
     - HHH - ťah nepovolený
@@ -50,10 +51,10 @@ Tiež platia globálne aj pre ostatné bloky
 
 Skladá sa z viacerých (maximálne 4) kodónov, z ktorých každý opisuje pohyb figúrky v jednom smere
 Figúrka sa posunie dopredu podľa prvého kodónu, otočí sa o 90° v ľubovoľnom smere, posunie sa podľa druhého kodónu, opäť sa otočí v rovnakom smere... a takto ďalej až po posledný kodón, odkiaľ sa opäť pokračuje prvým
-Tento proces sa opakuje dovtedy, kým sa figúrka nepohne na políčko, kde už stojí iná figúrka alebo opustí hraciu plochu
+Tento proces sa opakuje dovtedy, kým figúrka neofarbí políčko s figúrkou alebo opustí hraciu plochu
 Začiatočný smer figuľky je ľubovoľný
 
-Prvé písmeno: určuje či je ťah ofarbovací alebo nie - či sa dá na políčko, kde po tomto ťahu figúrka stojí, pohnúť
+Prvé písmeno: určuje či je ťah ofarbovací alebo nie - či sa dá na políčko, kde po tomto pohybe figúrka stojí, pohnúť
 A - krok je nulový a neofarbovací bez ohľadu na zvyšok kodónu
 S - ofarbovacie
 C - neofarbovacie
