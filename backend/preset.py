@@ -10,10 +10,6 @@ class Preset:
     def __init__(self, hashes:list[str]):
         self.hashes=hashes
         assert len(hashes) <= BOARD_X, "There must be at most {BOARD_X} genomes in a preset"
-
-        self.genomes=[]
-        for i in self.hashes:
-            self.genomes.append(Genome.from_hash(i))
         self.string = "-".join(self.hashes)
         self.save()
         

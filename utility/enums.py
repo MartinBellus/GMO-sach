@@ -51,7 +51,7 @@ class Colors(Enum):
     WHITE = auto()
 
 
-class WhosePieceEnum(StrEnum, metaclass=MyEnumMeta):
+class WhosePiece(StrEnum, metaclass=MyEnumMeta):
     MINE = "A"
     OPPONENTS = "S"
     NONE = "C"

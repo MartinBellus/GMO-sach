@@ -98,7 +98,7 @@ class Chessboard:
     def __repr__(self):
         return "Chessboard: " + "".join([f"{i}:{self.chessboard[i]}\n" for i in self.chessboard])
 
-    def count_kings(self, color: Colors) -> int:
+    def _count_kings(self, color: Colors) -> int:
         ans = 0
         for i in self.chessboard:
             if self.chessboard[i].color == color and self.chessboard[i].is_king:
@@ -112,9 +112,9 @@ class Chessboard:
             self.game_status == GameStatus.NOT_STARTED, "Game has already started")
         self._real_game_assert(self.turn_number == 0,
                                "Game has already started")
-        self._real_game_assert(self.count_kings(
+        self._real_game_assert(self._count_kings(
             Colors.WHITE) >= 1, "White king is missing")
-        self._real_game_assert(self.count_kings(
+        self._real_game_assert(self._count_kings(
             Colors.BLACK) >= 1, "Black king is missing")
 
         self.game_status = GameStatus.IN_PROGRESS
@@ -169,8 +169,8 @@ class Chessboard:
         piece_from_new_pos = self.chessboard[to_pos] if to_pos in self.chessboard else None
 
         # save original king counts
-        white_kings = self.count_kings(Colors.WHITE)
-        black_kings = self.count_kings(Colors.BLACK)
+        white_kings = self._count_kings(Colors.WHITE)
+        black_kings = self._count_kings(Colors.BLACK)
 
         # firstly, erase them
         if from_pos in self.chessboard:
@@ -181,19 +181,20 @@ class Chessboard:
 
         # clone correct piece to correct position
 
-        enum_to_piece = {WhosePieceEnum.MINE: piece_from_original_pos, WhosePieceEnum.OPPONENTS: piece_from_new_pos}
+        enum_to_piece = {WhosePiece.MINE: piece_from_original_pos,
+                         WhosePiece.OPPONENTS: piece_from_new_pos}
 
-        if descriptor.original_square_new_state[0] != WhosePieceEnum.NONE:
-            self.chessboard[from_pos] = enum_to_piece[descriptor.original_square_new_state[0]].copy()
+        if descriptor.original_square_new_state[0] != WhosePiece.NONE:
+            self.chessboard[from_pos] = enum_to_piece[descriptor.original_square_new_state[0]].copy(
+            )
             self.chessboard[from_pos].set_color(
                 color if descriptor.original_square_new_state[1] == Players.ME else other_color)
 
-        
-        if descriptor.to_square_new_state[0] != WhosePieceEnum.NONE:
-            self.chessboard[to_pos] = enum_to_piece[descriptor.to_square_new_state[0]].copy()
+        if descriptor.to_square_new_state[0] != WhosePiece.NONE:
+            self.chessboard[to_pos] = enum_to_piece[descriptor.to_square_new_state[0]].copy(
+            )
             self.chessboard[to_pos].set_color(
                 color if descriptor.to_square_new_state[1] == Players.ME else other_color)
-
 
         self.turn_number += 1
 
@@ -208,8 +209,8 @@ class Chessboard:
         self.clock.start(self.get_current_player())
 
         # if the number of kings decreases, the player loses
-        white_loses = self.count_kings(Colors.WHITE) < white_kings
-        black_loses = self.count_kings(Colors.BLACK) < black_kings
+        white_loses = self._count_kings(Colors.WHITE) < white_kings
+        black_loses = self._count_kings(Colors.BLACK) < black_kings
 
         if white_loses and black_loses:
             self._game_over(GameStatus.DRAW)
@@ -240,7 +241,7 @@ class Chessboard:
             return None
 
     def promote(self, position, new_genome_hash: str) -> None:
-        assert self.get_promotion is not None, "No promotions available"
+        assert self.get_promotion() is not None, "No promotions available"
         assert position == self.promotions[0], "Invalid promotion position"
 
         self._frozen = False
@@ -294,8 +295,10 @@ class Chessboard:
 
             self._real_game_assert(
                 pos not in self.chessboard, "Attempt to place preset piece on an existing piece.")
+            
+            genome = Genome.from_hash(preset.hashes[i])
 
-            piece = Piece(preset.genomes[i], color)
+            piece = Piece(genome, color)
             self._insert_piece(piece, pos)
 
         # pawns

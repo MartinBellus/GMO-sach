@@ -91,9 +91,9 @@ class Spirulateral:
         self.owner_on_next = Players.OPPONENT
 
         # which pieces will be copied into current and next tile after a move depending on what lies on the target tile
-        self.on_opponent_capture: tuple[WhosePieceEnum, WhosePieceEnum] = None
-        self.on_own_capture: tuple[WhosePieceEnum, WhosePieceEnum] = None
-        self.on_no_capture: tuple[WhosePieceEnum, WhosePieceEnum] = None
+        self.on_opponent_capture: tuple[WhosePiece, WhosePiece] = None
+        self.on_own_capture: tuple[WhosePiece, WhosePiece] = None
+        self.on_no_capture: tuple[WhosePiece, WhosePiece] = None
 
         # the debuffs that this spirulateral has
         self.debuffs = set()
@@ -155,16 +155,16 @@ class Spirulateral:
         genome_assert(len(self.parts) <= 4,
                       "Spirulateral must have at most 4 parts.")
 
-    def parse_capture_codon(self) -> tuple[WhosePieceEnum, WhosePieceEnum] | None:
+    def parse_capture_codon(self) -> tuple[WhosePiece, WhosePiece] | None:
         codon = self.codons.get_codon()
         if codon == MOVE_IMPOSSIBLE_CODON:
             return None
         genome_assert(codon[1] == "H",
                       "Middle character of capture codon must be H.")
-        genome_assert(codon[0] in WhosePieceEnum,
-                      f"First character of capture codon must be in {WhosePieceEnum}.")
-        genome_assert(codon[2] in WhosePieceEnum,
-                      f"Third character of capture codon must be in {WhosePieceEnum}.")
+        genome_assert(codon[0] in WhosePiece,
+                      f"First character of capture codon must be in {WhosePiece}.")
+        genome_assert(codon[2] in WhosePiece,
+                      f"Third character of capture codon must be in {WhosePiece}.")
 
         return (codon[0], codon[2])
 
@@ -222,9 +222,9 @@ class Spirulateral:
                 break
 
             # make sure we don't get stuck in a cycle
-            if (current_position, direction) in visited:
+            if (current_position, direction, i) in visited:
                 break
-            visited.add((current_position, direction))
+            visited.add((current_position, direction, i))
 
             # maybe color the tile if the move is coloring
             if self.parts[i].coloring:

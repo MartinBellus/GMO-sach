@@ -13,7 +13,7 @@ to_square_new_state: tuple (piece, player) - same as above
 
 
 class MoveDescriptor:
-    def __init__(self, original_position: Vector, to_position: Vector, square_from: (WhosePieceEnum, Players), square_to: (WhosePieceEnum, Players)):
+    def __init__(self, original_position: Vector, to_position: Vector, square_from: (WhosePiece, Players), square_to: (WhosePiece, Players)):
         self.original_position = original_position
         self.to_position = to_position
         self.original_square_new_state = square_from
