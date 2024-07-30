@@ -46,7 +46,10 @@ class InputPopup(tkinter.Toplevel):
             self.status.config(text="Invalid key",fg="Red")
 
         except Exception as ex:
-            self.status.config(text=str(ex),fg="Red")
+            text = str(ex)
+            if len(text) >= 50:
+                text = text[:50] + "..."
+            self.status.config(text=text,fg="Red")
             print(f"Error: {ex}")
 
 class TextPopup(tkinter.Toplevel):

@@ -10,6 +10,7 @@ from backend.move_descriptor import MoveDescriptor
 from utility.constants import *
 from utility.vector import Vector, inside_chessboard
 from utility.enums import Colors, GameStatus
+from utility.exceptions import NetworkException, RemoteFileNotFound, InvalidGenomeException
 
 class Color:
     #           BIELE       CIERNE
@@ -81,7 +82,6 @@ class ChessboardUI(tkinter.Canvas):
             self.images.append(img)
             self.create_image(self.width/2,self.height/2,image=img,tag="freeze")
             self.update_idletasks()
-            print("freeze")
             time.sleep(5)
             self.delete("freeze")
 
@@ -104,17 +104,14 @@ class ChessboardUI(tkinter.Canvas):
                 else:
                     super().create_text(self.width/2,PADDING/2,text="Black turn.",anchor="center",justify="center",tag="text")
             case GameStatus.WHITE_WON:
-                print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! WHITE WON !!!",anchor="center",justify="center",tag="text")
                 self.unbind("<Button-1>")
                 self.unbind("<Button-3>")
             case GameStatus.BLACK_WON:
-                print("game over")
                 super().create_text(self.width/2,PADDING/2,text="!!! BLACK WON !!!",anchor="center",justify="center",tag="text")
                 self.unbind("<Button-1>")
                 self.unbind("<Button-3>")
             case GameStatus.DRAW:
-                print("game over")
                 super().create_text(self.width/2,PADDING/2,text="DRAW",anchor="center",justify="center",tag="text")
                 self.unbind("<Button-1>")
                 self.unbind("<Button-3>")
@@ -123,7 +120,6 @@ class ChessboardUI(tkinter.Canvas):
                 self.bind("<Button-1>",self.ingame_click)
                 self.bind("<Button-3>",self.get_dna_click)
             case _:
-                print("neexistuje")
                 raise Exception("Game state does not exist")
 
         while self.controller.get_promotion() != None:
@@ -230,6 +226,12 @@ class ChessboardUI(tkinter.Canvas):
             self.selected = Vector(-1,-1)
             self.controller.insert_piece_by_dna(dna,color,Vector(x,y))
             self.redraw_pieces()
+        except NetworkException:
+            TextPopup("Error","Can not connect to server")
+        except RemoteFileNotFound:
+            TextPopup("Error", "Internal server error")
+        except InvalidGenomeException:
+            TextPopup("Error", "Genome is invalid")
         except Exception as ex:
             print(f"Error when placing piece: {ex}")
             TextPopup("Error","Can not place piece")
@@ -239,8 +241,13 @@ class ChessboardUI(tkinter.Canvas):
             self.clear_selected()
             self.selected = Vector(-1,-1)
             self.controller.insert_piece(hash,color,Vector(x,y))
+        except NetworkException:
+            TextPopup("Error","Can not connect to server")
+        except RemoteFileNotFound:
+            TextPopup("Error", "Wrong piece key")
         except Exception as ex:
-            raise ex
+            TextPopup("Error", "Can not place piece")
+            print(f"Error when placing piece: {ex}")
         self.redraw_pieces()
 
     def place_preset(self, preset : str,color : Colors):
@@ -249,6 +256,8 @@ class ChessboardUI(tkinter.Canvas):
             self.selected = Vector(-1,-1)
             self.controller.load_preset(preset, color)
             self.redraw_pieces()
+        except NetworkException:
+            raise NetworkException("Can not connect to server")
         except Exception as ex:
             raise ex
 

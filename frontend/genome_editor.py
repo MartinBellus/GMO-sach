@@ -83,7 +83,6 @@ class FileSelector(tkinter.Button):
             return
         with open(filename,"r") as dna:
             content : str = ''.join(dna.readlines())
-            print(repr(content))
             self.target.set_text(content)
 
 class PlaceButton(tkinter.Frame):

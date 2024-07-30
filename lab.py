@@ -4,14 +4,12 @@ from frontend.popups import InputPopup,TextPopup
 from frontend.menu import Menu
 from backend.chessboard import Chessboard
 from backend.genome import Genome
-from backend.preset import Preset
 from utility.constants import *
 from utility.enums import Colors
 import tkinter
 
 
 def help():
-    # TODO
     TextPopup("Help","Ľavým klikom sa pohybujú figúrky, pravým zistíš, aký má daná figúrka kód.",
               "Napravo sa nachádza editor, v ktorom môžeš meniť genóm figúrky a vkladať ju na plochu. Pomocou Fetch Piece alebo Open Genome môžeš načítať už existujúci genóm do editora.",
               "Pomocou Save Preset si môžeš uložiť aktuálne rozloženie figúrok pre bieleho a čierneho hráča.", ttl=10000)
