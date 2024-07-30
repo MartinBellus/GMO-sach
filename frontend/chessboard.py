@@ -241,6 +241,7 @@ class ChessboardUI(tkinter.Canvas):
             self.clear_selected()
             self.selected = Vector(-1,-1)
             self.controller.insert_piece(hash,color,Vector(x,y))
+            self.redraw_pieces()
         except NetworkException:
             TextPopup("Error","Can not connect to server")
         except RemoteFileNotFound:
@@ -248,7 +249,6 @@ class ChessboardUI(tkinter.Canvas):
         except Exception as ex:
             TextPopup("Error", "Can not place piece")
             print(f"Error when placing piece: {ex}")
-        self.redraw_pieces()
 
     def place_preset(self, preset : str,color : Colors):
         try:

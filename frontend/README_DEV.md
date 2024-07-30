@@ -17,6 +17,9 @@ Toto je trieda, ktorá je zodpovedná za vykreslovanie stavu šachovnice,
 spracovanie vstupu užívateľa a komunikáciu s backendom. Táto trieda je odvodená
 od `Tkinter.Canvas`.
 
+Všetky informácie, teda aktuálny stav, pozíciu figúrok a podobne, sú získavané
+od triedy `backend.Chessboard`.
+
 ### Stav šachovnice
 
 Šachovnica sa môže nachádzať v jednom zo stavov špecifikovaných v
@@ -26,7 +29,7 @@ stavmi hry je zodpovedná funkcia `switch_state`.
 
 Ak je na začiatku zmeny stavu šachovnica "zamrazená", tak sa zmena stavu
 uskutoční s 5 sekundovým oneskorením. Počas tohto oneskorania sa zobrazí
-obrázok `freeze.png`.
+obrázok `images/special/freeze.png`.
 
 Na konci zmeny stavu sa ešte vyriešia prípadné premeny pešiakov. Ak sa niektorý
 z pešiakov dokáže premeniť, tak sa zobrazí dialógové okno, v ktorom môže hráč
@@ -36,12 +39,12 @@ vybrať, na ktorú figúrku sa pešiak premení. Premenu pešiaka vykonáva funk
 ### Vykresľovanie figúrok
 
 Figúrky na šachovnici sú vykresľované pomocou obrázkov. Presnejšie pomocou
-funkcie `create_image` triedy `Tkinter.Canvas`. Za vytvorenie správneho obrázka
-je zodpovedná trieda `ImageSelector`.
+funkcie `create_image` triedy `Tkinter.Canvas`. Za vytvorenie a úpravu obrázka
+je zodpovedná trieda `ImageSelector` popísaná nižšie.
 
 Po každej zmene polohy figúrok sa zavolá funkcia `redraw_pieces`, ktorá najprv
-vymaže všetky obrázky na šachovnici a potom vykreslí aktuálny stav. Tento stav
-získa od triedy `backend.Chessboard`.
+vymaže všetky obrázky na šachovnici a potom vykreslí aktuálnu polohu figúrok na
+šachovnici.
 
 Na vykreslovanie ťahov sa používajú metódy:
 
@@ -56,18 +59,21 @@ Na vykreslovanie ťahov sa používajú metódy:
 Na pokladanie figúrok sa používajú metódy:
 
 - `place_piece` - položí figúrku zo zadaným genómom na zadané políčko
+	- pri chybe vytvorí dialógové okno s chybovou hláškou a normálne skončí
 	- parametre:
 		- `dna` - genóm figúrky
 		- `color` - farba figúrky
 		- `x` - x-ová súradnica políčka
 		- `y` - y-ová súradnica políčka
 - `place_piece_hash` - podobne ako `place_piece`, ale genóm je reprezentovaný kódom figúrky
+	- pri chybe vytvorí dialógové okno s chybovou hláškou a normálne skončí
 	- parametre:
 		- `hash` - kód figúrky
 		- `color` - farba figúrky
 		- `x` - x-ová súradnica políčka
 		- `y` - y-ová súradnica políčka
 - `place_preset` - položí začiatočné rozloženie figúrok podľa kódu pre zadaného hráča
+	- môže skončiť s chybou, ktorú potom vyrieši `InputPopup`
 	- parametre:
 		- `preset` - kód začiatočného rozloženia figúrok
 		- `color` - farba figúrky
@@ -76,9 +82,9 @@ Každá z týchto metód zavolá korešpondujúcu metódu triedy `backend.Chessb
 následne prekreslí stav šachovnice pomocou funckie `redraw_pieces`.
 
 Tieto funkcie sa použivajú ako callback funckie pre niektoré z tlačítok v menu
-alebo v dialógových oknách.
+alebo v dialógových oknách `InputPopup`.
 
-### Spracovanie vstupu
+### Spracovanie vstupu užívateľa
 
 Kliknutia sa spracovávajú priradením udalostí (kliknutí myšou) k metódam tejto
 triedy pomocou funckie `bind`.
@@ -96,7 +102,7 @@ V rôznych stavoch sa používajú nasledovné metódy:
 
 ## EditorUI
 
-Trieda `EditorUI` slúži na zobrazenie editora genómov a tlačítkami na
+Trieda `EditorUI` slúži na zobrazenie editora genómov a tlačítok na
 interakciu s `ChessboardUI`. Táto trieda je odvodená od triedy `Tkinter.Frame`.
 
 `EditorUI` obsahuje nasledovné komponenty:
@@ -164,7 +170,7 @@ ktorá aktualizuje zobrazenie časovačov a zvýrazní časovač aktívneho hrá
 Konštruktor triedy má nasledovné parametre:
 
 - `parent` - widget, v ktorom sa časovače nachádzajú
-- `controller` - odkaz na triedu `backend.Chessboard`\
+- `controller` - odkaz na triedu `backend.Chessboard`
 - voliteľné parametre pre triedu `Tkinter.Frame`
 
 ## Menu
@@ -198,7 +204,7 @@ Metódy:
 		- `height` - výška obrázku
 - `get_image(piece_info) -> ImageTk.PhotoImage`
 	- prevedie hash genómu na index obrázku, ktorý potom upraví podľa farby figúrky a vráti
-	- ak je figúrka kráľ, tak sa k obrázku pridá obrázok `images/king.png` pomocou metódy `paste`
+	- ak je figúrka kráľ, tak sa k obrázku pridá obrázok `images/special/king.png` pomocou metódy `paste`
 - `adjust(px, color)`
 	- zmení farbu pixelu podľa farby figúrky
 	- ak je figúrka biela, tak zvýši jas pixelu o 50%, v opačnom prípade zníži jas o 50%
