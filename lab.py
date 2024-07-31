@@ -3,7 +3,7 @@ from frontend.genome_editor import EditorUI
 from frontend.popups import InputPopup,TextPopup
 from frontend.menu import Menu
 from backend.chessboard import Chessboard
-from backend.genome import Genome
+from backend.genome_cache import fetch_genome
 from utility.constants import *
 from utility.enums import Colors
 import tkinter
@@ -38,7 +38,7 @@ def save_as():
 
 def fetch():
     InputPopup("Fetch piece from key","Insert piece code, it will be loaded into code editor.",
-        lambda x: editor.editor.set_text(Genome.from_hash(x).raw_dna))
+        lambda x: editor.editor.set_text(fetch_genome(x)))
 
 if __name__ == "__main__":
     root = tkinter.Tk()
