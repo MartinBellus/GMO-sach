@@ -2,7 +2,7 @@ from utility.constants import *
 from utility.enums import *
 from utility.vector import Vector, inside_chessboard
 from backend.move_descriptor import MoveDescriptor
-from backend.genome_cache import fetch_genome, upload_genome
+from backend.genome_cache import fetch_dna, upload_dna
 from utility.exceptions import InvalidGenomeException, OutOfCodons
 from copy import copy
 import hashlib
@@ -336,10 +336,10 @@ class Genome:
 
     @classmethod
     def from_hash(cls, hash: str):
-        return cls(fetch_genome(hash))
+        return cls(fetch_dna(hash))
 
     def save(self):
-        upload_genome(self.hash(), self.dna.get_string())
+        upload_dna(self.hash(), self.dna.get_string())
 
     def get_debuffs(self):
         return copy(self.debuffs)

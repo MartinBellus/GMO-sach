@@ -138,6 +138,13 @@ Preset podobne umožňuje pomocou jedného kódu uložiť celý zadný rad figú
   - Vráti farbu hráča na ťahu
   - return - *Colors*, farba hráča na ťahu
   
+### genome_cache.fetch_dna
+
+- *fetch_dna(genome_hash) -> str*
+  - Získa DNA figúrky podľa jej hashu
+  - **Ak figúrka s daným hashom na serveri neexistuje, hádže RemoteFileNotFound**
+  - *genome_hash* - *str*, hash DNA figúrky
+  - return - *str*, DNA figúrky
 
 ### utility.enums.Colors
 

@@ -4,9 +4,10 @@ from utility.constants import *
 from utility.exceptions import NetworkException
 from backend.network import NetworkQuery
 
-genome_cache: dict[str,str] = {}
+genome_cache: dict[str, str] = {}
 
-def fetch_genome(hash: str) -> str:
+
+def fetch_dna(hash: str) -> str:
     if hash in genome_cache:
         return genome_cache[hash]
 
@@ -14,11 +15,11 @@ def fetch_genome(hash: str) -> str:
 
     encrypted_hash = encrypt(hash)
 
-    query=NetworkQuery("genome", "GET", encrypted_hash)
+    query = NetworkQuery("genome", "GET", encrypted_hash)
     response = query.do_get()
     if not response[0]:
         raise NetworkException
-    
+
     encrypted_string = response[1]
 
     string = decrypt(encrypted_string)
@@ -28,24 +29,21 @@ def fetch_genome(hash: str) -> str:
     return genome_cache[hash]
 
 
-
-
-def upload_genome(hash: str, dna:str) -> None:
+def upload_dna(hash: str, dna: str) -> None:
     if hash in genome_cache:
         return
 
     encrypted_hash = encrypt(hash)
     encrypted_dna = encrypt(dna)
-    
-    query=NetworkQuery("genome", "POST", encrypted_hash, encrypted_dna)
+
+    query = NetworkQuery("genome", "POST", encrypted_hash, encrypted_dna)
     query.do_query()
 
     genome_cache[hash] = dna
-
 
 
 if __name__ == "__main__":
     print(decrypt(encrypt("HelloWorld1")))
     rook_genome = "AHH HSH HAA CHA CHA CHA HHA SAS AAA AAA AAA".replace(
         " ", "")
-    upload_genome(rook_genome)
+    upload_dna(rook_genome)
