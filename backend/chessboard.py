@@ -42,6 +42,12 @@ class Chessboard:
         piece = Piece(genome, color, is_pawn, is_king)
         self._insert_piece(piece, position)
 
+    def insert_piece_by_dna(self, dna: str, color: Colors, position: Vector, is_pawn=False, is_king=False):
+        assert self.sandbox, "insert_piece only available in sandbox, in real games use presets"
+        genome = Genome(dna)
+        piece = Piece(genome, color, is_pawn, is_king)
+        self._insert_piece(piece, position)
+
     def erase_piece(self, pos: Vector):
         self._real_game_assert(
             False, "erase_piece only available in sandbox, in real games use presets")

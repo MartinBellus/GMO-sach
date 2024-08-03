@@ -55,6 +55,11 @@ Preset podobne umožňuje pomocou jedného kódu uložiť celý zadný rad figú
     - *is_pawn* - *bool*, určuje, či je figúrka pešiak - či sa vie v poslednom rade premeniť
     - *is_king* - *bool*, určuje, či je figúrka kráľ
 
+- *insert_piece_by_dna(dna, color, position, is_pawn=False, is_king=False) -> None*
+    - Rovnaké ako insert_piece, ale namiesto hashu DNA sa používa priamo DNA
+    - **Dostupné len v sandbox móde**
+    - **V prípade neplatného genómu hádže InvalidGenomeException**
+
 - *erase_piece(position) -> None*
     - Odstráni figúrku z danej pozície
     - Ak je políčko prázdne, raisuje *IndexError*
