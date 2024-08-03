@@ -290,7 +290,7 @@ class Chessboard:
         else:
             raise Exception
 
-        for i in range(len(preset.genomes)):
+        for i in range(len(preset.hashes)):
             pos = Vector(i, row)
 
             self._real_game_assert(

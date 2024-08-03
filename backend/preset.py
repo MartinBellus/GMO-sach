@@ -15,7 +15,12 @@ class Preset:
         
     
     def hash(self):
-        return hashlib.sha256(self.string.encode()).hexdigest()[:6]
+        ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz"
+        hsh = hashlib.sha256(self.string.encode()).digest()[:6]
+        res = ""
+        for i in hsh:
+            res += ALPHABET[i % len(ALPHABET)]
+        return res
         
 
     @classmethod

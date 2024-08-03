@@ -34,7 +34,7 @@ API má primárne formu volania metód inštancie triedy *backend.chessboard.Che
 
 ## Čo je preset a genome/preset hash?
 
-Na zjednodušenie prenášania DNA figúrok medzi počítačmi má každý genóm hash - 6 znakové base64 číslo. Tento kód sa vždy pri vytvorení novej figúrky uloží na server a následne sa figúrka dá pokladať pomocou neho.
+Na zjednodušenie prenášania DNA figúrok medzi počítačmi má každý genóm hash - 6 znakový reťazec tvorený číslicami a malými písmenami anglickej abecedy. Tento kód sa vždy pri vytvorení novej figúrky uloží na server a následne sa figúrka dá pokladať pomocou neho.
 
 Preset podobne umožňuje pomocou jedného kódu uložiť celý zadný rad figúrok. Tento kód má rovnaký formát.
 
