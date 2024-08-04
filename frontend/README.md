@@ -70,10 +70,11 @@ Na ukladanie a načítavanie figúrok a rozložení figúrok slúži menu v horn
 - `Reset` - vymaže všetky figúrky z testovacej šachovnice
 - `Place White Preset` - načíta prednastavené rozloženie figúrok podľa jeho kódu a položí ho na stranu bieleho hráča na šachovnici
 - `Place Black Preset` - rovnako ako `Place White Preset`, ale položí figúrky na stranu čierneho hráča
-- `Save Piece` - uloží obsah editora do súboru
+- `Save Piece` - uloží obsah editora do súboru z príponou `.dna`
 - `Save Preset` - uloží na server rozloženie figúrok na prvom alebo poslednom riadku šachovnice a zobrazí dialógové okno s jeho kódom
 - `Fetch Piece` - načíta figúrku zo servera podľa jej kódu a vloží jej genóm do editora
 - `Help` - zobrazí nápovedu
+- `Open Genome` - zobrazí sa dialógové okno na výber súboru. Následne sa obsah vybratého súboru načíta do editora
 
 Figúrky na šachovnici sa ovládajú myšou. Ľavým kliknutím na figúrku sa
 zvýraznia políčka, na ktoré táto figúrka dokáže stúpiť. Ľavým kliknutím na
