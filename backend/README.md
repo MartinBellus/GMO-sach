@@ -4,15 +4,39 @@ Autor: Jakub Konc
 
 Toto je dokumentácia k API backendu hry GMO šach. 
 
-GMO šach sa podobá na štandardný šach, avšak každá figúrka má priradený reťazec (DNA), ktorý určuje jej ťahy. Štruktúra DNA je popísaná [tu](genome_format.md).
+GMO šach sa podobá na štandardný šach, avšak každá figúrka má priradený reťazec (DNA), ktorý určuje jej ťahy. Štruktúra DNA je popísaná [tu](../genome_format.md).
+
+Hra sa hrá na 8x8 šachovnici. Do zadnej rady si hráč môže dať ľubovoľné figúrky (samozrejme musí poznať ich DNA). Figúrky sa môžu opakovať, kľudne môže byť všetkých 8 rovnakých. Avšak celý zadný rad musí byť naplnený.
+
+V predposlednom rade sa nachádza 8 pešiakov - figúrok ktoré sa vedia hýbať o jedno políčko dopredu a vyhadzujú diagonálne. Okrem toho keď sa pešiak dostane do poslednej rady šachovnice, zmení sa na ľubovoľnú figúrku.
+
+Pred začiatkom hry si každý z hráčov označí aspoň jednu zo svojich figúrok za kráľa.
+
+Ťahy hráčov sa striedajú, začínajúc bielym. Každý hráč má na svoje ťahy dokopy maximálne 5 minút, hráč, ktorému sa minie čas prehráva.
+
+Počas každého ťahu hráč pohne jednou figúrkou, pričom:
+- Možné ťahy každej figúrky sú špecifikované jej DNA
+- Hráč nevidí DNA protihráčových figúrok, avšak vie si prezrieť ich aktuálne možné ťahy
+- GMO šach narozdiel od štandardného šachu nemá rošádu, prvý pohyb pešiaka o 2 políčka, En passant
+- Ľavá a pravá hrana šachovnice sú prepojené -- teda po pohybe o jedno políčko doľava z ľavej hrany skončí figúrka na pravej
+
+Hra sa končí buď keď jednému z hráčov vyprší čas, alebo keď je zahraný ťah, ktorým sa aspoň jednému z hráčov zníži počet kráľov. Ak sa znížil počet kráľov obom hráčom, hra končí remízou, inak ten kto prišiel o kráľa prehráva.
 
 ## Použitie
 
 API má primárne formu volania metód inštancie triedy *backend.chessboard.Chessboard*. Tá môže existovať v dvoch režimoch:
     - štandardnom, použitom pri hrách
     - sandbox móde, ktorý je použitý pri skúšaní genómov v labe
+      - neplatia v ňom všetky pravidlá hry, dajú sa do neho ľubovoľne vkladať a mazať figúrky na vyskúšanie pohybov
+      - nemá časovač a hra nekončí - proste prostredie na skúšanie
 
 **Na správne fungovanie musí byť spustený server.**
+
+## Čo je preset a genome/preset hash?
+
+Na zjednodušenie prenášania DNA figúrok medzi počítačmi má každý genóm hash - 6 znakový reťazec tvorený číslicami a malými písmenami anglickej abecedy. Tento kód sa vždy pri vytvorení novej figúrky uloží na server a následne sa figúrka dá pokladať pomocou neho.
+
+Preset podobne umožňuje pomocou jedného kódu uložiť celý zadný rad figúrok. Tento kód má rovnaký formát.
 
 ### backend.chessboard.Chessboard
 
@@ -24,6 +48,7 @@ API má primárne formu volania metód inštancie triedy *backend.chessboard.Che
     - Vloží novú figúrku na šachovnicu
     - Ak je políčko obsadené, prepíše ho
     - **Dostupné len v sandbox móde**
+    - **Ak figúrka s daným hashom na serveri neexistuje, hádže RemoteFileNotFound**
     - *genome_hash* - *str*, hash DNA figúrky
     - *color* - *Colors*(enum), farba figúrky
     - *position* - *Vector*, políčko na šachovnci, kde sa má figúrka nachádzať
@@ -33,6 +58,7 @@ API má primárne formu volania metód inštancie triedy *backend.chessboard.Che
 - *insert_piece_by_dna(dna, color, position, is_pawn=False, is_king=False) -> None*
     - Rovnaké ako insert_piece, ale namiesto hashu DNA sa používa priamo DNA
     - **Dostupné len v sandbox móde**
+    - **V prípade neplatného genómu hádže InvalidGenomeException**
 
 - *erase_piece(position) -> None*
     - Odstráni figúrku z danej pozície
@@ -78,6 +104,7 @@ API má primárne formu volania metód inštancie triedy *backend.chessboard.Che
 
 - *promote(position, dna_hash) -> None*
   - Premení pešiaka na danej pozícií na figúrku s daným genomom
+  - **Ak figúrka s daným hashom na serveri neexistuje, hádže RemoteFileNotFound a zlyhá**
   - *position* - *Vector*, políčko na šachovnci, kde sa pešiak nachádza
   - *dna_hash* - *str*, hash DNA figúrky
 
@@ -94,13 +121,19 @@ API má primárne formu volania metód inštancie triedy *backend.chessboard.Che
   - Vráti aktuálny stav hry
   - return - *GameStatus*
 
-TODO zrušiť možnosť dávať load preset priamo preset
-
 - *load_preset(preset_hash, color) -> None*
   - Použije preset figúriek
+    - Do posledného radu šachovnice z pohľadu danej farby sa umiestnia figúrky z presetu
+    - Predposledný rad zaplnia pešiaci
   - **Môže byť volané len pred začiatkom hry a iba raz pre každú farbu**
+  - **Ak preset s daným hashom na serveri neexistuje, hádže RemoteFileNotFound**
   - *preset_hash* - *str*, hash presetu
   - *color* - *Colors*, hráč, ktorý používa daný preset
+  
+- *save_preset(color) -> str|None*
+  - Uloží zadný rad figúrok danej farby ako preset
+  - *color* - *Colors*, farba, ktorej figúrky sa majú uložiť
+  - return - *str*, hash presetu alebo *None* ak daný hráč nemá plný zadný rad
 
 - *get_board_for_reading() -> [[PieceInfo | None]]*
   - Vráti obsah šachovnice
@@ -110,6 +143,13 @@ TODO zrušiť možnosť dávať load preset priamo preset
   - Vráti farbu hráča na ťahu
   - return - *Colors*, farba hráča na ťahu
   
+### genome_cache.fetch_dna
+
+- *fetch_dna(genome_hash) -> str*
+  - Získa DNA figúrky podľa jej hashu
+  - **Ak figúrka s daným hashom na serveri neexistuje, hádže RemoteFileNotFound**
+  - *genome_hash* - *str*, hash DNA figúrky
+  - return - *str*, DNA figúrky
 
 ### utility.enums.Colors
 
